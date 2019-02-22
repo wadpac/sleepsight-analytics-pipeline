@@ -45,7 +45,7 @@ getPhoneAcc = function(filefolder, desiredtz) {
         acc$num_time = as.numeric(acc$Created.Date.POSIX) # work with numeric time
         acc$num_time_60sec = round(acc$num_time / 60) * 60 # round time to nearest 60 seconds
         # aggregate per 60 seconds:
-        acc.per60sec = aggregate(x = acc[c("acceleration","sf")],
+        acc.per60sec = aggregate(x = acc[,c("acceleration","sf")],
                                 FUN = mean, by = list(Group.time = acc$num_time_60sec),
                                 na.rm=TRUE, na.action=NULL)
         outputMatrixAccstore = rbind(outputMatrixAccstore,acc.per60sec)
