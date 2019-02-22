@@ -1,0 +1,17 @@
+Package: sleepsanpl
+Type: Package
+Title: Sleepsight Analytics Pipeline
+Version: 0.0-1
+Date: 2019-02-22
+Authors@R: c(person("Vincent T","van Hees",role=c("aut","cre"),
+                  email="vincentvanhees@gmail.com"))
+Maintainer: Vincent T van Hees <vincentvanhees@gmail.com>
+Description: Processes mobile and wearable sensor data generated in the sleepsight study
+URL: https://github.com/wadpac/sleepsight-analytics-pipeline
+License: Apache 2.0 | file LICENSE
+Suggests: bit64
+Imports: data.table
+Depends: stats, utils, R (>= 3.1.2)
+NeedsCompilation: no
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1
