@@ -56,7 +56,7 @@ fn_scresta = dir(screstafolder)
 filename = paste0(screstafolder,fn_scresta)
 ScreenOnTimes = getScreenState(filename, desiredtz)
 timer4 = Sys.time()
-# print(timer4-timer3)
+print(timer4-timer3)
 #-------------------------------------
 print("pdk-sensor-accelerometer")
 accfolder = "pdk-sensor-accelerometer/"
@@ -84,6 +84,11 @@ timer7 = Sys.time()
 print(timer7-timer6)
 print("Total")
 print(timer7-timer0)
+
+
+save(withingsdata,lightOnTimes,PhoneAcc,ScreenOnTimes,MovementPSGTimes,AppActiveTimes,batInteractTimes,
+     file=paste0(path,"/sleepanpl_output.RData"))
+
 #======================================
 # Information not used:
 #======================================

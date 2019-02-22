@@ -43,13 +43,14 @@ getPhoneAcc = function(filefolder, desiredtz) {
         acc = acc[which(acc$sf != Inf & acc$sf != 0 & acc$sf < 200),]
         timer0 = Sys.time() # keep track of how long it taks to process the file
         acc$num_time = as.numeric(acc$Created.Date.POSIX) # work with numeric time
-        acc$num_time_60sec = round(acc$num_time / 60) * 60 # round time to nearest 5 seconds
+        acc$num_time_60sec = round(acc$num_time / 60) * 60 # round time to nearest 60 seconds
         # aggregate per 60 seconds:
         acc.per60sec = aggregate(x = acc[c("acceleration","sf")],
                                 FUN = mean, by = list(Group.time = acc$num_time_60sec),
                                 na.rm=TRUE, na.action=NULL)
         outputMatrixAccstore = rbind(outputMatrixAccstore,acc.per60sec)
         if (NR < blocksize) stopprocess = TRUE
+        SourceID = acc$Source[1]
         rm(acc)
       }
     }
@@ -57,7 +58,7 @@ getPhoneAcc = function(filefolder, desiredtz) {
   outputMatrixAcc = outputMatrixAccstore
   acc = data.frame(Created.Date.POSIX = as.POSIXlt(outputMatrixAcc[,1],origin = "1970-1-1",tz=desiredtz),
                    acceleration=outputMatrixAcc[,2],sf=outputMatrixAcc[,3],
-                   Source=rep(acc$Source[1],nrow(outputMatrixAcc)))
+                   Source=rep(SourceID,nrow(outputMatrixAcc)))
   # x11()
   # par(mfrow=c(2,1))
   # plot(acc$Created.Date.POSIX,acc$acceleration,type="l",main="acceleration")
