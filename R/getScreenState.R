@@ -1,13 +1,14 @@
 #' getScreenState
 #'
 #' @param filename name of file where pdk-screen-state is stored (txt).
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return timestamps (POSIX) on which the screen was on.
 #' @export
-getScreenState = function(filename) {
+getScreenState = function(filename, desiredtz) {
   scresta = data.table::fread(file=filename,sep="\t")
   scresta = as.data.frame(scresta)
   scresta = replaceVarWithSpace(scresta)
-  scresta = addPOSIX(scresta)
+  scresta = addPOSIX(scresta, desiredtz)
   NR = nrow(scresta)
   screenactive = scresta$Screen.State != "off"
   scresta$Screen.State.binary = rep(0,NR)

@@ -4,10 +4,12 @@
 \alias{getMovementPSG}
 \title{getAppActive}
 \usage{
-getMovementPSG(filename)
+getMovementPSG(filename, desiredtz)
 }
 \arguments{
 \item{filename}{name of file where pdk-location is stored (txt).}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 timestamps (POSIX) on which the phone moved based on PSG/Speed information.

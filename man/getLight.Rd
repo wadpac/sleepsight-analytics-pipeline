@@ -8,6 +8,8 @@ getLight(filefolder, desiredtz)
 }
 \arguments{
 \item{filefolder}{path to folder pdk-sensor-light with Phone light sensor files (txt).}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 timestamps (POSIX) on which the light was on.

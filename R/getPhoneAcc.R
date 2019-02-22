@@ -1,14 +1,16 @@
 #' getPhoneAcc
 #'
 #' @param filefolder path to folder pdk-sensor-accelerometer with Phone acceleration files (txt).
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return acc a dataframe with timestamps (POSIX), acceleration, sf sample frequency and source.
 #' @export
+#' @importFrom stats aggregate
 getPhoneAcc = function(filefolder, desiredtz) {
-  fn_acc = dir(accfolder)
+  fn_acc = dir(filefolder)
   outputMatrixAccstore = matrix(0,0,3)
   for (j in 1:length(fn_acc)) {
     cat(paste0("\nLoading file ",fn_acc[j]))
-    acc = data.table::fread(file=paste0(accfolder,fn_acc[j]),sep="\t")
+    acc = data.table::fread(file=paste0(filefolder,fn_acc[j]),sep="\t")
     acc = as.data.frame(acc)
     acc = replaceVarWithSpace(acc)
     NR = nrow(acc)

@@ -4,10 +4,12 @@
 \alias{addPOSIX}
 \title{addPOSIX}
 \usage{
-addPOSIX(x)
+addPOSIX(x, desiredtz)
 }
 \arguments{
 \item{x}{data.frame with column "Created.Date" that has timestamps in sleepsight format}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 data.frame x with timestamps added in POSIX format

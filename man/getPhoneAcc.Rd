@@ -8,6 +8,8 @@ getPhoneAcc(filefolder, desiredtz)
 }
 \arguments{
 \item{filefolder}{path to folder pdk-sensor-accelerometer with Phone acceleration files (txt).}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 acc a dataframe with timestamps (POSIX), acceleration, sf sample frequency and source.

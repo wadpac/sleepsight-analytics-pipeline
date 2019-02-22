@@ -1,13 +1,14 @@
 #' getAppActive
 #'
 #' @param filename name of file where pdk-foreground-application is stored (txt).
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return timestamps (POSIX) on which the apps were on.
 #' @export
-getAppActive = function(filename) {
+getAppActive = function(filename, desiredtz) {
   app = data.table::fread(file=filename,sep="\t")
   app = as.data.frame(app)
   app = replaceVarWithSpace(app)
-  app = addPOSIX(app)
+  app = addPOSIX(app, desiredtz)
   NR = nrow(app)
   app$Screen.Active.binary = rep(0,NR)
   app$Screen.Active.binary[which(app$Screen.Active == "True" | app$Screen.Active == "TRUE")] = 1

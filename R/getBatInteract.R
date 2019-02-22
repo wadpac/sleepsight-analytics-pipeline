@@ -1,13 +1,14 @@
 #' getBatInteract
 #'
 #' @param filename name of file where pdk-device-battery is stored (txt).
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return timestamps (POSIX) on which the battery was either being connected or unplugged.
 #' @export
-getBatInteract = function(filename) {
+getBatInteract = function(filename, desiredtz) {
   bat = data.table::fread(file=filename,sep="\t")
   bat = as.data.frame(bat)
   bat = replaceVarWithSpace(bat)
-  bat = addPOSIX(bat)
+  bat = addPOSIX(bat, desiredtz)
   plugged = bat$Plugged != "unknown"
   batInteract = which(abs(diff(plugged)) != 0)
   batInteractTimes = bat$Created.Date.POSIX[batInteract]

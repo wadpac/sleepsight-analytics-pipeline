@@ -4,10 +4,12 @@
 \alias{getScreenState}
 \title{getScreenState}
 \usage{
-getScreenState(filename)
+getScreenState(filename, desiredtz)
 }
 \arguments{
 \item{filename}{name of file where pdk-screen-state is stored (txt).}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 timestamps (POSIX) on which the screen was on.

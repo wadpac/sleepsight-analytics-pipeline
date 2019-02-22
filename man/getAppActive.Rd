@@ -4,10 +4,12 @@
 \alias{getAppActive}
 \title{getAppActive}
 \usage{
-getAppActive(filename)
+getAppActive(filename, desiredtz)
 }
 \arguments{
 \item{filename}{name of file where pdk-foreground-application is stored (txt).}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 timestamps (POSIX) on which the apps were on.

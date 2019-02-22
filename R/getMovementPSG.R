@@ -1,13 +1,14 @@
 #' getAppActive
 #'
 #' @param filename name of file where pdk-location is stored (txt).
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return timestamps (POSIX) on which the phone moved based on PSG/Speed information.
 #' @export
-getMovementPSG = function(filename) {
+getMovementPSG = function(filename, desiredtz) {
   loc = data.table::fread(file=filename,sep="\t")
   loc = as.data.frame(loc)
   loc = replaceVarWithSpace(loc)
-  loc = addPOSIX(loc)
+  loc = addPOSIX(loc, desiredtz)
   # movement based on speed
   movement_speed = which(loc$Speed != 0 & is.na(loc$Speed) == FALSE)
   # movement based on change in Latitude

@@ -1,8 +1,10 @@
 #' addPOSIX
 #'
 #' @param x data.frame with column "Created.Date" that has timestamps in sleepsight format
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return data.frame x with timestamps added in POSIX format
-addPOSIX = function(x) {
+#' @export
+addPOSIX = function(x, desiredtz) {
   # add timestamps in POSIX format to make them R friendly
   removeLastSemicol = function(x) {
     tmp = unlist(strsplit(x,":"))

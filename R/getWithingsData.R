@@ -1,9 +1,10 @@
 #' getWithingsData
 #'
 #' @param filefolder path to folder Withings-.... with Withings data files (txt).
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return data.frame with timestamps (POSIX) on which body info was entered and/or there was movement.
 #' @export
-getWithingsData = function(filefolder) {
+getWithingsData = function(filefolder, desiredtz) {
   fn_wit = dir(filefolder,recursive = T,full.names = T)
   txtfiles = grep(".tx",x = fn_wit)
   fn_wit = fn_wit[txtfiles] # assumption now that there are 4 txt files
@@ -15,7 +16,7 @@ getWithingsData = function(filefolder) {
   devbod = data.table::fread(file=fn_wit[grep("device-body",x = fn_wit)],sep="\t")
   devbod = as.data.frame(devbod)
   devbod = replaceVarWithSpace(devbod)
-  devbod = addPOSIX(devbod)
+  devbod = addPOSIX(devbod, desiredtz)
   devbod = devbod[,c("Source","Created.Date.POSIX")]
   # x11() # Create plot to QC event detection
   # plot(devbod$Created.Date.POSIX,rep(1,nrow(devbod)),type="p",pch=20,col="red",ylab="info entered")
@@ -28,7 +29,7 @@ getWithingsData = function(filefolder) {
   devint = data.table::fread(file=fn_wit[grep("device-intra",x = fn_wit)],sep="\t")
   devint = as.data.frame(devint)
   devint = replaceVarWithSpace(devint)
-  devint = addPOSIX(devint)
+  devint = addPOSIX(devint, desiredtz)
   devint = devint[,c("Source","Created.Date.POSIX","steps","swim_strokes","pool_laps","elevation_climbed","distance","calories")]
   devint =devint[is.na(devint$steps)==FALSE,]
   devint$Date = as.Date(devint$Created.Date.POSIX)

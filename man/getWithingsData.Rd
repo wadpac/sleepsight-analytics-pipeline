@@ -4,10 +4,12 @@
 \alias{getWithingsData}
 \title{getWithingsData}
 \usage{
-getWithingsData(filefolder)
+getWithingsData(filefolder, desiredtz)
 }
 \arguments{
 \item{filefolder}{path to folder Withings-.... with Withings data files (txt).}
+
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 data.frame with timestamps (POSIX) on which body info was entered and/or there was movement.
