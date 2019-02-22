@@ -20,74 +20,102 @@ desiredtz = "Europe/London"
 # Declare common functions:
 library(sleepsanpl)
 library(data.table)
+reload = TRUE
+if (reload == TRUE) {
+  timer0 = Sys.time()
+  #-----------------------------------------
+  print("extract battery information")
+  batfolder = "pdk-device-battery/"
+  fn_bat = dir(batfolder)
+  filename = paste0(batfolder,fn_bat)
+  batInteractTimes = getBatInteract(filename, desiredtz) # timestamps when phone was either put on charged or plugged out.
+  timer1 = Sys.time()
+  print(timer1-timer0)
+  #-------------------------------------
+  print("pdk-foreground-application")
+  appfolder = "pdk-foreground-application/"
+  fn_app = dir(appfolder)
+  filename = paste0(appfolder,fn_app)
+  AppActiveTimes = getAppActive(filename, desiredtz)
+  timer2 = Sys.time()
+  print(timer2-timer1)
+  #-------------------------------------
+  print("pdk-location")
+  locfolder = "pdk-location/"
+  fn_loc = dir(locfolder)
+  filename = paste0(locfolder,fn_loc)
+  MovementPSGTimes = getMovementPSG(filename, desiredtz)
+  timer3 = Sys.time()
+  print(timer3-timer2)
+  # -------------------------------------
+  print("pdk-screen-state")
+  # Note: probably not relevant, because screen activity does not necessarily
+  # say much about whether the person interacted with the phone, e.g. incoming call
+  # or messages...?
+  screstafolder = "pdk-screen-state/"
+  fn_scresta = dir(screstafolder)
+  filename = paste0(screstafolder,fn_scresta)
+  ScreenOnTimes = getScreenState(filename, desiredtz)
+  timer4 = Sys.time()
+  print(timer4-timer3)
+  #-------------------------------------
+  print("pdk-sensor-accelerometer")
+  accfolder = "pdk-sensor-accelerometer/"
+  PhoneAcc = getPhoneAcc(accfolder, desiredtz) # Note that this function provides all acceleration information
+  # Comments on usefulness:
+  # - Data has varying sample rates, which complicates high-pass filtering if we wanted to.
+  # - Data is not collected in the absense of movement, which complicates autocalibraton.
+  # - We cannot use the default time extraction because that would only reflect when data
+  #   blocks are created. Instread used "Normalized Timestamp"
+  # - It seems that timestamps are not ordered correctly, so first order timestamps.
+  timer5 = Sys.time()
+  print(timer5-timer4)
+  #-------------------------------------
+  print("pdk-sensor-light")
+  # Light probably not useful, because light can change without the person change activity state
+  filefolder = "pdk-sensor-light/"
+  lightOnTimes = getLight(filefolder, desiredtz)
+  timer6 = Sys.time()
+  print(timer6-timer5)
+  #-------------------------------------
+  print("Withings device")
+  filefolder = "Withings-20190215T093727Z-001/" # note that function searches this folder recursevely for files that meet the description
+  withingsdata = getWithingsData(filefolder, desiredtz)
+  timer7 = Sys.time()
+  print(timer7-timer6)
+  print("Total")
+  print(timer7-timer0)
+  save(withingsdata,lightOnTimes,PhoneAcc,ScreenOnTimes,MovementPSGTimes,AppActiveTimes,batInteractTimes,
+       file=paste0(path,"/sleepanpl_output.RData"))
+} else {
+  load(file=paste0(path,"/sleepanpl_output.RData"))
+}
 
-timer0 = Sys.time()
-#-----------------------------------------
-print("extract battery information")
-batfolder = "pdk-device-battery/"
-fn_bat = dir(batfolder)
-filename = paste0(batfolder,fn_bat)
-batInteractTimes = getBatInteract(filename, desiredtz) # timestamps when phone was either put on charged or plugged out.
-timer1 = Sys.time()
-print(timer1-timer0)
-#-------------------------------------
-print("pdk-foreground-application")
-appfolder = "pdk-foreground-application/"
-fn_app = dir(appfolder)
-filename = paste0(appfolder,fn_app)
-AppActiveTimes = getAppActive(filename, desiredtz)
-timer2 = Sys.time()
-print(timer2-timer1)
-#-------------------------------------
-print("pdk-location")
-locfolder = "pdk-location/"
-fn_loc = dir(locfolder)
-filename = paste0(locfolder,fn_loc)
-MovementPSGTimes = getMovementPSG(filename, desiredtz)
-timer3 = Sys.time()
-print(timer3-timer2)
-# -------------------------------------
-print("pdk-screen-state")
-# Note: probably not relevant, because screen activity does not necessarily
-# say much about whether the person interacted with the phone, e.g. incoming call
-# or messages...?
-screstafolder = "pdk-screen-state/"
-fn_scresta = dir(screstafolder)
-filename = paste0(screstafolder,fn_scresta)
-ScreenOnTimes = getScreenState(filename, desiredtz)
-timer4 = Sys.time()
-print(timer4-timer3)
-#-------------------------------------
-print("pdk-sensor-accelerometer")
-accfolder = "pdk-sensor-accelerometer/"
-PhoneAcc = getPhoneAcc(accfolder, desiredtz) # Note that this function provides all acceleration information
-# Comments on usefulness:
-# - Data has varying sample rates, which complicates high-pass filtering if we wanted to.
-# - Data is not collected in the absense of movement, which complicates autocalibraton.
-# - We cannot use the default time extraction because that would only reflect when data
-#   blocks are created. Instread used "Normalized Timestamp"
-# - It seems that timestamps are not ordered correctly, so first order timestamps.
-timer5 = Sys.time()
-print(timer5-timer4)
-#-------------------------------------
-print("pdk-sensor-light")
-# Light probably not useful, because light can change without the person change activity state
-filefolder = "pdk-sensor-light/"
-lightOnTimes = getLight(filefolder, desiredtz)
-timer6 = Sys.time()
-print(timer6-timer5)
-#-------------------------------------
-print("Withings device")
-filefolder = "Withings-20190215T093727Z-001/" # note that function searches this folder recursevely for files that meet the description
-withingsdata = getWithingsData(filefolder, desiredtz)
-timer7 = Sys.time()
-print(timer7-timer6)
-print("Total")
-print(timer7-timer0)
+# Take into account resolution of data when merging
+# TO DO: round or interpolate all modalities to a resolution of 5 seconds.
+# Current resolution"
+# withingsdata - 60 seconds
+# lightOnTimes - 5 seconds
+# PhoneAcc - 60 seconds
+# ScreenOnTimes - 1 second
+# MovementPSGTimes - 1 second
+# AppActiveTimes - 5 seconds
+# batInteractTimes - 1 second
+
+# merge data
+lightOn = data.frame(time = lightOnTimes,lighton=TRUE)
+ScreenOn = data.frame(time = ScreenOnTimes,sreenon = TRUE)
+df = merge(lightOn,ScreenOn,by="time", all = TRUE)
+PSGmove = data.frame(time = MovementPSGTimes,PSGmove = TRUE)
+df = merge(df,PSGmove,by="time", all = TRUE)
+appactive = data.frame(time = AppActiveTimes,AppAct = TRUE)
+df = merge(df,appactive,by="time", all = TRUE)
+batinteract = data.frame(time = batInteractTimes, batinteract = TRUE)
+df = merge(df,batinteract,by="time", all = TRUE)
 
 
-save(withingsdata,lightOnTimes,PhoneAcc,ScreenOnTimes,MovementPSGTimes,AppActiveTimes,batInteractTimes,
-     file=paste0(path,"/sleepanpl_output.RData"))
+# TO DO: also do PhoneAcc and withingsdata
+
 
 #======================================
 # Information not used:
