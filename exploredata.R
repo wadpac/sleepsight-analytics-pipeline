@@ -20,7 +20,7 @@ desiredtz = "Europe/London"
 # Declare common functions:
 library(sleepsanpl)
 library(data.table)
-reload = TRUE
+reload = FALSE
 if (reload == TRUE) {
   timer0 = Sys.time()
   #-----------------------------------------
@@ -90,19 +90,32 @@ if (reload == TRUE) {
 } else {
   load(file=paste0(path,"/sleepanpl_output.RData"))
 }
-
-# Take into account resolution of data when merging
-# TO DO: round or interpolate all modalities to a resolution of 5 seconds.
-# Current resolution"
-# withingsdata - 60 seconds
+#----------------------------------------------------------------
+# Round resolution of all channels to 1 minute to simplify merging
+aggregatePerMinute = function(x, desiredtz) {
+  # aggregate input timestamps per minute
+  x_num = round(as.numeric(x)/ 60)*60
+  x_num = unique(x_num)
+  x_60sec = as.POSIXlt(x_num,origin="1970-01-01",tz=desiredtz)
+  return(x_60sec)
+}
 # lightOnTimes - 5 seconds
-# PhoneAcc - 60 seconds
+lightOnTimes = aggregatePerMinute(lightOnTimes) # now 60 seconds
 # ScreenOnTimes - 1 second
+ScreenOnTimes = aggregatePerMinute(ScreenOnTimes) # now 60 seconds
 # MovementPSGTimes - 1 second
+MovementPSGTimes = aggregatePerMinute(MovementPSGTimes) # now 60 seconds
 # AppActiveTimes - 5 seconds
+AppActiveTimes = aggregatePerMinute(AppActiveTimes) # now 60 seconds
 # batInteractTimes - 1 second
-
-# merge data
+batInteractTimes = aggregatePerMinute(batInteractTimes) # now 60 seconds
+# PhoneAcc - 60 seconds
+PhoneAccTimes = PhoneAcc$Created.Date.POSIX[which((PhoneAcc$acceleration/9.81) > 0.03)]
+# withingsdata - 1second for body info, 1 minute for movemnet
+WithingsMoveTimes = withingsdata$timestamp[which(withingsdata$infoentered == TRUE | withingsdata$movement == TRUE)] 
+WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes) # now 60 seconds for both
+#------------------------------------------------------------------------
+# merge all channels in one data.frame
 lightOn = data.frame(time = lightOnTimes,lighton=TRUE)
 ScreenOn = data.frame(time = ScreenOnTimes,sreenon = TRUE)
 df = merge(lightOn,ScreenOn,by="time", all = TRUE)
@@ -112,13 +125,62 @@ appactive = data.frame(time = AppActiveTimes,AppAct = TRUE)
 df = merge(df,appactive,by="time", all = TRUE)
 batinteract = data.frame(time = batInteractTimes, batinteract = TRUE)
 df = merge(df,batinteract,by="time", all = TRUE)
+phoneacc = data.frame(time = PhoneAccTimes, phoneacc = TRUE)
+df = merge(df,phoneacc,by="time", all = TRUE)
+withingsMove = data.frame(time = WithingsMoveTimes, withingsMove  = TRUE)
+df = merge(df, withingsMove, by="time", all = TRUE)
+#--------------------------------------------------------
+# add hour in the day to ease plotting
+df$hour = as.POSIXlt(df$time)$hour
+df$min = as.POSIXlt(df$time)$min
+df$min_inday = df$hour * 60 + df$min
+clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
+df$clock = as.POSIXct(df$time,format="%H:%M:%S",tz=desiredtz)
+#--------------------------------------------------------
+# prepare plotting variables
+clocktimesX = c("00:00","06:00","12:00","18:00","24:00")
+Xposi = c(0,6,12,18,24) * 60 #as.POSIXct(clocktimesX, format="%H:%M",tz = desiredtz)
+Xlabe = clocktimesX
 
+# x11()
+# rannum = rnorm(n = nrow(df),mean = 0,sd=5)
+# par(mfrow=c(3,2))
+# CX = 0.05
+# plot(df$min_inday,df$sreenon+rannum, axes = FALSE, type="p",pch=20,cex=CX,xlab="",ylab="")
+# axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone Screen is on",xlab="time")
+# plot(df$min_inday,df$lighton+rannum, axes= FALSE, type="p",pch=20,cex=CX,xlab="",ylab="")
+# axis(side = 1,at = Xposi,labels = Xlabe); title(main="Light level above 10",xlab="time")
+# plot(df$min_inday,df$PSGmove+rannum, axes = FALSE, type="p",pch=20,cex=CX,xlab="",ylab="") 
+# axis(side = 1,at = Xposi,labels = Xlabe); title(main="PSG or Speed indicates movement of phone",xlab="time")
+# plot(df$min_inday,df$AppAct+rannum, axes = FALSE, type="p",pch=20,cex=CX,xlab="",ylab="")
+# axis(side = 1,at = Xposi,labels = Xlabe); title(main="Foreground app is on",xlab="time")
+# plot(df$min_inday,df$batinteract+rannum, axes = FALSE,type="p",pch=20,cex=CX,xlab="",ylab="")
+# axis(side = 1,at = Xposi,labels = Xlabe); title(main="Put battery On/Off charge",xlab="time")
+# plot(df$min_inday,df$phoneacc+rannum, axes = FALSE,type="p",pch=20,cex=CX,xlab="",ylab="")
+# axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone accelerates more than 0.03 times gravity",xlab="time")
 
-# TO DO: also do PhoneAcc and withingsdata
+png(filename = paste0(path,"/histograms_test.png"),width = 12,height = 6,units = "in",res = 400)
+par(mfrow=c(2,4))
+CX = 0.05
+hist(df$min_inday[which(df$sreenon==TRUE)], axes = FALSE, xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone screen is on",xlab="time")
+hist(df$min_inday[which(df$lighton==TRUE)], axes= FALSE, xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone light level above 10",xlab="time")
+hist(df$min_inday[which(df$PSGmove == TRUE)], axes = FALSE, xlab="",ylab="",main = "") 
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone PSG/Speed indicate movement",xlab="time")
+hist(df$min_inday[which(df$AppAct==TRUE)], axes = FALSE, xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone foreground app is on",xlab="time")
+hist(df$min_inday[which(df$batinteract==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone battery put on/off charge",xlab="time")
+hist(df$min_inday[which(df$phoneacc==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone accelerates > 0.03 times gravity",xlab="time")
+hist(df$min_inday[which(df$withingsMove==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Withings moves / Body info entered",xlab="time")
+dev.off()
 
 
 #======================================
-# Information not used:
+# Information not used at the moment:
 #======================================
 
 ## -------------------------------------
