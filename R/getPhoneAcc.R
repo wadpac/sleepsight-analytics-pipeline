@@ -2,10 +2,11 @@
 #'
 #' @param filefolder path to folder pdk-sensor-accelerometer with Phone acceleration files (txt).
 #' @param desiredtz timezone (character) in Europe/London format
+#' @param test_run boolean if TRUE then it will only load the first block of data
 #' @return acc a dataframe with timestamps (POSIX), acceleration, sf sample frequency and source.
 #' @export
 #' @importFrom stats aggregate
-getPhoneAcc = function(filefolder, desiredtz) {
+getPhoneAcc = function(filefolder, desiredtz, test_run=FALSE) {
   fn_acc = dir(filefolder)
   outputMatrixAccstore = matrix(0,0,3)
   
@@ -20,6 +21,11 @@ getPhoneAcc = function(filefolder, desiredtz) {
     blocki = 1
     while(stopprocess == FALSE) { # while loop iterates over the file
       try(expr={acc = data.table::fread(file=fname,sep="\t",nrows = blocksize, skip = endlastblock)},silent=TRUE)
+      
+      if (test_run == TRUE) {
+        if (blocki == 2) stopprocess = TRUE
+      }
+      
       if (length(acc) == 0) {
         stopprocess = TRUE
       } else {

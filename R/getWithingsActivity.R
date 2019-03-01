@@ -1,13 +1,14 @@
-#' getWithingsData
+#' getWithingsActivity
 #'
 #' @param filefolder path to folder Withings-.... with Withings data files (txt).
 #' @param desiredtz timezone (character) in Europe/London format
 #' @return data.frame with timestamps (POSIX) on which body info was entered and/or there was movement.
 #' @export
-getWithingsData = function(filefolder, desiredtz) {
+getWithingsActivity = function(filefolder, desiredtz) {
   fn_wit = dir(filefolder,recursive = T,full.names = T)
   txtfiles = grep(".tx",x = fn_wit)
   fn_wit = fn_wit[txtfiles] # assumption now that there are 4 txt files
+  
   #-------------------------------------
   # Accumulated steps over large periods, probably not relevant:
   # actmea = data.table::fread(file=fn_wit[grep("activity-measures",x = fn_wit)],sep="\t")
@@ -46,6 +47,9 @@ getWithingsData = function(filefolder, desiredtz) {
                                      movement=rep(TRUE,nrow(devint)),
                                      date= devint$Date, # to facilitate calculating steps per day (see commented code above)
                                      steps=devint$steps)
-  withingsdata = base::merge(withings_enterbodyinfo,withings_personactive,by ="timestamp",all=TRUE)
-  return(withingsdata)
+  
+  
+  
+  withingsActivity = base::merge(withings_enterbodyinfo,withings_personactive,by ="timestamp",all=TRUE)
+  return(withingsActivity)
 }

@@ -4,12 +4,14 @@
 \alias{getPhoneAcc}
 \title{getPhoneAcc}
 \usage{
-getPhoneAcc(filefolder, desiredtz)
+getPhoneAcc(filefolder, desiredtz, test_run = FALSE)
 }
 \arguments{
 \item{filefolder}{path to folder pdk-sensor-accelerometer with Phone acceleration files (txt).}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
+
+\item{test_run}{boolean if TRUE then it will only load the first block of data}
 }
 \value{
 acc a dataframe with timestamps (POSIX), acceleration, sf sample frequency and source.

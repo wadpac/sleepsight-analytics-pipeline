@@ -10,5 +10,7 @@ replaceVarWithSpace = function(x) {
   if("Screen State" %in% colnames(x) == TRUE) x$Screen.State = x$`Screen State`
   if("Normalized Timestamp" %in% colnames(x) == TRUE) x$Normalized.Timestamp = x$`Normalized Timestamp`
   if("Light Level" %in% colnames(x) == TRUE) x$Light.Level = x$`Light Level`
+  if("App Runtime" %in% colnames(x) == TRUE) x$App.Runtime = x$`App Runtime`
+  if("Is Day" %in% colnames(x) == TRUE) x$Is.Day = x$`Is Day`
   return(x)
 }

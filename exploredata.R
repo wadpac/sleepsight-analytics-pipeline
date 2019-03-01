@@ -21,6 +21,7 @@ desiredtz = "Europe/London"
 library(sleepsanpl)
 library(data.table)
 reload = FALSE
+
 if (reload == TRUE) {
   timer0 = Sys.time()
   #-----------------------------------------
@@ -32,11 +33,9 @@ if (reload == TRUE) {
   timer1 = Sys.time()
   print(timer1-timer0)
   #-------------------------------------
-  print("pdk-foreground-application")
-  appfolder = "pdk-foreground-application/"
-  fn_app = dir(appfolder)
-  filename = paste0(appfolder,fn_app)
-  AppActiveTimes = getAppActive(filename, desiredtz)
+  print("Withings device - sleep")
+  filefolder = "Withings-20190215T093727Z-001/" # note that function searches this folder recursevely for files that meet the description
+  WithingsSleep = getWithingsSleep(filefolder, desiredtz)
   timer2 = Sys.time()
   print(timer2-timer1)
   #-------------------------------------
@@ -48,14 +47,12 @@ if (reload == TRUE) {
   timer3 = Sys.time()
   print(timer3-timer2)
   # -------------------------------------
-  print("pdk-screen-state")
-  # Note: probably not relevant, because screen activity does not necessarily
-  # say much about whether the person interacted with the phone, e.g. incoming call
-  # or messages...?
-  screstafolder = "pdk-screen-state/"
-  fn_scresta = dir(screstafolder)
-  filename = paste0(screstafolder,fn_scresta)
-  ScreenOnTimes = getScreenState(filename, desiredtz)
+  print("System status")
+  # Runtime information is relevant for checking data missingness
+  statusfolder = "pdk-system-status/"
+  fn_status = dir(statusfolder)
+  filename = paste0(statusfolder,fn_status)
+  AppHalted = getSystemHalted(filename, desiredtz)
   timer4 = Sys.time()
   print(timer4-timer3)
   #-------------------------------------
@@ -77,15 +74,47 @@ if (reload == TRUE) {
   lightOnTimes = getLight(filefolder, desiredtz)
   timer6 = Sys.time()
   print(timer6-timer5)
+  
   #-------------------------------------
-  print("Withings device")
+  print("Withings device - activity")
   filefolder = "Withings-20190215T093727Z-001/" # note that function searches this folder recursevely for files that meet the description
-  withingsdata = getWithingsData(filefolder, desiredtz)
+  WithingsActivity = getWithingsActivity(filefolder, desiredtz)
   timer7 = Sys.time()
   print(timer7-timer6)
+  #-------------------------------------
+  print("pdk-foreground-application")
+  appfolder = "pdk-foreground-application/"
+  fn_app = dir(appfolder)
+  filename = paste0(appfolder,fn_app)
+  AppActiveTimes = getAppActive(filename, desiredtz)
+  timer8 = Sys.time()
+  print(timer8-timer7)
+  #-------------------------------------
+  print("pdk-screen-state")
+  # Note: probably not relevant, because screen activity does not necessarily
+  # say much about whether the person interacted with the phone, e.g. incoming call
+  # or messages...?
+  screstafolder = "pdk-screen-state/"
+  fn_scresta = dir(screstafolder)
+  filename = paste0(screstafolder,fn_scresta)
+  ScreenOnTimes = getScreenState(filename, desiredtz)
+  timer9 = Sys.time()
+  print(timer9-timer8)
+  # -------------------------------------
+  print("Sunset Sunrise")
+  todfolder = "pdk-time-of-day/"
+  fn_tod = dir(todfolder)
+  filename = paste0(todfolder,fn_tod)
+  SunSetRise = getSunSetRise(filename, desiredtz)
+  timer10 = Sys.time()
+  print(timer10-timer9)
+  #-------------------------------------
   print("Total")
-  print(timer7-timer0)
-  save(withingsdata,lightOnTimes,PhoneAcc,ScreenOnTimes,MovementPSGTimes,AppActiveTimes,batInteractTimes,
+  print(timer10-timer0)
+  save(WithingsActivity,WithingsSleep,
+       lightOnTimes,PhoneAcc,
+       ScreenOnTimes, MovementPSGTimes, AppActiveTimes,
+       batInteractTimes, AppHalted, SunSetRise,
        file=paste0(path,"/sleepanpl_output.RData"))
 } else {
   load(file=paste0(path,"/sleepanpl_output.RData"))
@@ -99,21 +128,38 @@ aggregatePerMinute = function(x, desiredtz) {
   x_60sec = as.POSIXlt(x_num,origin="1970-01-01",tz=desiredtz)
   return(x_60sec)
 }
+
+print("Standardise resolution")
 # lightOnTimes - 5 seconds
-lightOnTimes = aggregatePerMinute(lightOnTimes) # now 60 seconds
+lightOnTimes = aggregatePerMinute(lightOnTimes, desiredtz) # now 60 seconds
 # ScreenOnTimes - 1 second
-ScreenOnTimes = aggregatePerMinute(ScreenOnTimes) # now 60 seconds
+ScreenOnTimes = aggregatePerMinute(ScreenOnTimes, desiredtz) # now 60 seconds
 # MovementPSGTimes - 1 second
-MovementPSGTimes = aggregatePerMinute(MovementPSGTimes) # now 60 seconds
+MovementPSGTimes = aggregatePerMinute(MovementPSGTimes, desiredtz) # now 60 seconds
 # AppActiveTimes - 5 seconds
-AppActiveTimes = aggregatePerMinute(AppActiveTimes) # now 60 seconds
+AppActiveTimes = aggregatePerMinute(AppActiveTimes, desiredtz) # now 60 seconds
 # batInteractTimes - 1 second
-batInteractTimes = aggregatePerMinute(batInteractTimes) # now 60 seconds
+batInteractTimes = aggregatePerMinute(batInteractTimes, desiredtz) # now 60 seconds
 # PhoneAcc - 60 seconds
 PhoneAccTimes = PhoneAcc$Created.Date.POSIX[which((PhoneAcc$acceleration/9.81) > 0.03)]
-# withingsdata - 1second for body info, 1 minute for movemnet
-WithingsMoveTimes = withingsdata$timestamp[which(withingsdata$infoentered == TRUE | withingsdata$movement == TRUE)] 
-WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes) # now 60 seconds for both
+# WithingsActivity - 1 second for body info, 1 minute for movement
+WithingsMoveTimes = WithingsActivity$timestamp[which(WithingsActivity$infoentered == TRUE | WithingsActivity$movement == TRUE)] 
+WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # now 60 seconds for both
+# WithingsSleep - 60 seconds
+# no need to downsample
+WithingsSleep=WithingsSleep[,-which(colnames(WithingsSleep) == "statecode")]
+WSN = colnames(WithingsSleep)
+colnames(WithingsSleep)[which(WSN=="statename")] = "withingsSleepState"
+# AppHalted - 1 second
+AppHaltedTimes = aggregatePerMinute(AppHalted, desiredtz) # now 60 seconds
+# SunSetRise - 1 second
+SunSetRise$timestamp = as.POSIXlt(SunSetRise$timestamp,origin="1970-1-1",tz=desiredtz)
+SunSetRise$timestamp = aggregatePerMinute(SunSetRise$timestamp, desiredtz) # now 60 seconds
+CS = colnames(SunSetRise)
+colnames(SunSetRise)[which(CS=="event")] = "SunSetRise"
+
+
+print("Merge into one data.frame")
 #------------------------------------------------------------------------
 # merge all channels in one data.frame
 lightOn = data.frame(time = lightOnTimes,lighton=TRUE)
@@ -129,6 +175,16 @@ phoneacc = data.frame(time = PhoneAccTimes, phoneacc = TRUE)
 df = merge(df,phoneacc,by="time", all = TRUE)
 withingsMove = data.frame(time = WithingsMoveTimes, withingsMove  = TRUE)
 df = merge(df, withingsMove, by="time", all = TRUE)
+AppHaltedTimes = data.frame(time = AppHaltedTimes, AppHalted  = TRUE)
+df = merge(df, AppHaltedTimes, by="time", all = TRUE)
+df = merge(df, SunSetRise, by.x="time",by.y="timestamp", all = TRUE)
+WithingsSleep$withingsSleepState =as.character(WithingsSleep$withingsSleepState )
+sleep_deep = data.frame(time=WithingsSleep$timestamp[which(WithingsSleep$withingsSleepState=="deep-sleep")],deepsleep=TRUE)
+sleep_light = data.frame(time=WithingsSleep$timestamp[which(WithingsSleep$withingsSleepState=="light-sleep")],lightsleep=TRUE)
+sleep_awake = data.frame(time=WithingsSleep$timestamp[which(WithingsSleep$withingsSleepState=="awake")],awake=TRUE)
+df = merge(df, sleep_deep, by = "time", all = TRUE)
+df = merge(df, sleep_light, by = "time", all = TRUE)
+df = merge(df, sleep_awake, by = "time", all = TRUE)
 #--------------------------------------------------------
 # add hour in the day to ease plotting
 df$hour = as.POSIXlt(df$time)$hour
@@ -159,45 +215,43 @@ Xlabe = clocktimesX
 # plot(df$min_inday,df$phoneacc+rannum, axes = FALSE,type="p",pch=20,cex=CX,xlab="",ylab="")
 # axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone accelerates more than 0.03 times gravity",xlab="time")
 
-png(filename = paste0(path,"/histograms_test.png"),width = 12,height = 6,units = "in",res = 400)
-par(mfrow=c(2,4))
+png(filename = paste0(path,"/histograms_test.png"),width = 12,height = 10,units = "in",res = 400)
+par(mfrow=c(3,4))
 CX = 0.05
 hist(df$min_inday[which(df$sreenon==TRUE)], axes = FALSE, xlab="",ylab="",main = "")
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone screen is on",xlab="time")
+
 hist(df$min_inday[which(df$lighton==TRUE)], axes= FALSE, xlab="",ylab="",main = "")
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone light level above 10",xlab="time")
+
 hist(df$min_inday[which(df$PSGmove == TRUE)], axes = FALSE, xlab="",ylab="",main = "") 
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone PSG/Speed indicate movement",xlab="time")
+
 hist(df$min_inday[which(df$AppAct==TRUE)], axes = FALSE, xlab="",ylab="",main = "")
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone foreground app is on",xlab="time")
+
 hist(df$min_inday[which(df$batinteract==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone battery put on/off charge",xlab="time")
+
 hist(df$min_inday[which(df$phoneacc==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Phone accelerates > 0.03 times gravity",xlab="time")
+
 hist(df$min_inday[which(df$withingsMove==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
 axis(side = 1,at = Xposi,labels = Xlabe); title(main="Withings moves / Body info entered",xlab="time")
+
+hist(df$min_inday[which(is.na(df$SunSetRise) == FALSE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="sunset or sunrise",xlab="time")
+
+hist(df$min_inday[which(df$AppHalted==TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="AppHalted",xlab="time")
+
+hist(df$min_inday[which(df$lightsleep == TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Withings LightSleep",xlab="time")
+
+hist(df$min_inday[which(df$deepsleep == TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Withings deep-sleep",xlab="time")
+
+hist(df$min_inday[which(df$awake == TRUE)], axes = FALSE,xlab="",ylab="",main = "")
+axis(side = 1,at = Xposi,labels = Xlabe); title(main="Withings awake",xlab="time")
 dev.off()
 
-
-#======================================
-# Information not used at the moment:
-#======================================
-
-## -------------------------------------
-## pdk-system-status
-## Gives storage level, not relevant for behavior
-## sysstafolder = "pdk-system-status/"
-## fn_syssta = dir(sysstafolder)
-## syssta = data.table::fread(file=paste0(sysstafolder,fn_syssta),sep="\t")
-
-## -------------------------------------
-## pdk-time-of-day
-## Gives sunrise, maybe useful as contextual data? Ignore for now, or better to retrieve this from other source?
-## todfolder = "pdk-time-of-day/"
-## fn_tod = dir(todfolder)
-## tod = data.table::fread(file=paste0(todfolder,fn_tod),sep="\t")
-
-##-------------------------------------
-# awake, deep sle, light sleep:
-# TO DO: Investigate how this can be used in activity profiling
-# devsle = data.table::fread(file=fn_wit[grep("device-sleep",x = fn_wit)],sep="\t")
