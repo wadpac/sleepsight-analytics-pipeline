@@ -14,7 +14,7 @@ preprocess(studyfolder, desiredtz, overwrite = FALSE)
 \item{overwrite}{boolean if TRUE then it will reload all the data (default FALSE).}
 }
 \value{
-outputfile the name of the RData file where all extracted data is stored.
+outputfolder the name of the RData file where all extracted data is stored.
 }
 \description{
 preprocess

@@ -21,17 +21,25 @@ for (personfolder in foldersInStudyFolder) {
   cat(paste0("\n",personfolder))
   tmp = unlist(strsplit(personfolder,"/"))
   personID = tmp[length(tmp)]
-  RDatafile = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite)
-  csvfile = paste0(personfolder,"/Sleepsight_overview_",personID,".csv")
-  export2csv(RDatafile,csvfile,desiredtz)
-  
+  cat("\nPreprocess")
+  outputfolder = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite)
+  cat("\nExport to csv")
+  csvfile = paste0("Sleepsight_overview_",personID,".csv")
+  export2csv(outputfolder,csvfile,desiredtz)
+  print("\nCreate histograms")
   if (do.plot == TRUE) { # simple historgram of all available data channels within a person
-    load(file=RDatafile)
+    RDAfiles = dir(outputfolder,full.names = TRUE)
+    for (RDAfile in RDAfiles) {
+      if (length(unlist(strsplit(RDAfile,"[.]cs"))) < 2) {
+        load(file=RDAfile)
+      }
+    }
     clocktimesX = c("00:00","06:00","12:00","18:00","24:00")
     Xposi = c(0,6,12,18,24) * 60 #as.POSIXct(clocktimesX, format="%H:%M",tz = desiredtz)
     Xlabe = clocktimesX
     
-    png(filename = paste0(personfolder,"/histograms_test.png"),width = 12,height = 10,units = "in",res = 400)
+    df = read.csv(file=paste0(outputfolder,"/",csvfile))
+    png(filename = paste0(outputfolder,"/histograms_test.png"),width = 12,height = 10,units = "in",res = 400)
     par(mfrow=c(3,4))
     CX = 0.05
     CDF = colnames(df)

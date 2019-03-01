@@ -1,12 +1,17 @@
 #' export2csv
 #'
-#' @param RDatafile RData datafile where the output of preprocess is stored.
+#' @param outputfolder RData datafile where the output of preprocess is stored.
 #' @param csvfile file name where data overview needs to be stored
 #' @param desiredtz timezone (character) in Europe/London format
 #' @return no output, just a file is stored
 #' @export
-export2csv = function(RDatafile, csvfile, desiredtz) {
-  load(file=RDatafile)
+export2csv = function(outputfolder, csvfile, desiredtz) {
+  RDAfiles = dir(outputfolder,full.names = TRUE)
+  for (RDAfile in RDAfiles) {
+    if (length(unlist(strsplit(RDAfile,"[.]cs"))) < 2) {
+      load(file=RDAfile)
+    }
+  }
   #----------------------------------------------------------------
   # Round resolution of all channels to 1 minute to simplify merging
   aggregatePerMinute = function(x, desiredtz) {
@@ -16,19 +21,19 @@ export2csv = function(RDatafile, csvfile, desiredtz) {
     x_60sec = as.POSIXlt(x_num,origin="1970-01-01",tz=desiredtz)
     return(x_60sec)
   }
-  addToDF = function(x,y) {
-    if (length(df) == 0) {
-      df = y
+  addToDF = function(x=c(),y=c()) {
+    if (length(x) == 0) {
+      dat = y
     } else {
-      df = merge(x,y,by="time", all = TRUE)
+      dat = merge(x, y, by="time", all = TRUE)
     }
-    return(df)
+    return(dat)
   }
   
   #------------------------------------------------------------------------
   # standardise time resolution (1 minute)
   # and merge all channels in one data.frame df
-  
+  df = c()
   if ("lightOnTimes" %in% ls()) {
     lightOnTimes = aggregatePerMinute(lightOnTimes, desiredtz) # from 5 to 60 seconds
     lightOn = data.frame(time = lightOnTimes,lighton=TRUE)
@@ -96,5 +101,5 @@ export2csv = function(RDatafile, csvfile, desiredtz) {
   df$min_inday = df$hour * 60 + df$min
   clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
   df$clock = as.POSIXct(df$time,format="%H:%M:%S",tz=desiredtz)
-  write.csv(df,file=csvfile,row.names = FALSE)
+  write.csv(df,file=paste0(outputfolder,"/",csvfile),row.names = FALSE)
 }

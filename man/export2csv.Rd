@@ -4,10 +4,10 @@
 \alias{export2csv}
 \title{export2csv}
 \usage{
-export2csv(RDatafile, csvfile, desiredtz)
+export2csv(outputfolder, csvfile, desiredtz)
 }
 \arguments{
-\item{RDatafile}{RData datafile where the output of preprocess is stored.}
+\item{outputfolder}{RData datafile where the output of preprocess is stored.}
 
 \item{csvfile}{file name where data overview needs to be stored}
 
