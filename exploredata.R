@@ -18,7 +18,7 @@ foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
-  cat(paste0("\n"print(personfolder)
+  cat(paste0("\n",personfolder))
   tmp = unlist(strsplit(personfolder,"/"))
   personID = tmp[length(tmp)]
   RDatafile = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite)

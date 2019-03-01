@@ -8,14 +8,13 @@
 preprocess = function(studyfolder,desiredtz,overwrite=FALSE) {
   setwd(personfolder)
   folders = list.dirs(".", recursive=FALSE)
-  print(folders)
   withingsfolder = c()
   withingsi = grep(pattern = "Withings-",x = folders)
   if (length(withingsi) > 0) {
     withingsfolder = folders[withingsi]
   }
   outputfile = paste0(studyfolder,"/sleepsight_wearables_data.RData")
-  
+  output = list()
   if (file.exists(outputfile) == FALSE | overwrite == TRUE) {
     
     if ("./pdk-device-battery" %in% folders) {
@@ -89,12 +88,17 @@ preprocess = function(studyfolder,desiredtz,overwrite=FALSE) {
       filename = paste0(todfolder,fn_tod)
       SunSetRise = getSunSetRise(filename, desiredtz)
     }
-    
-    save(WithingsActivity,WithingsSleep,
-         lightOnTimes,PhoneAcc,
-         ScreenOnTimes, MovementPSGTimes, AppActiveTimes,
-         batInteractTimes, AppHalted, SunSetRise,
-         file=outputfile)
+    # Store output as workspace image
+    possiblenames = c("WithingsActivity","WithingsSleep",
+            "lightOnTimes","PhoneAcc",
+            "ScreenOnTimes", "MovementPSGTimes", "AppActiveTimes",
+            "batInteractTimes", "AppHalted", "SunSetRise")
+    myworkspace = ls()
+    myworkspace = myworkspace[which(myworkspace %in% possiblenames == FALSE & myworkspace != "outputfile")]
+    for (i in 1:length(myworkspace)) {
+      eval(parse(text=paste0("rm(",myworkspace[i],")")))
+    }
+    save.image(file=outputfile)
   }
   return(outputfile)
 }
