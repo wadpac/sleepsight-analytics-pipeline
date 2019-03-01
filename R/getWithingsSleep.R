@@ -49,7 +49,6 @@ getWithingsSleep = function(filefolder, desiredtz) {
   colnames(WithingsSleepTimes)[which(CN == "x")] = "statecode"
   WithingsSleepTimes$statename = NA # when no label is available
   for (ki in 1:length(statelabels)) {
-    print(statelabels[ki])
     WithingsSleepTimes$statename[which(WithingsSleepTimes$statecode == ki)] = statelabels[ki]
   }
   WithingsSleepTimes[,-which(colnames(WithingsSleepTimes) == "statecode")]

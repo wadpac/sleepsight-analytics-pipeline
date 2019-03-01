@@ -10,7 +10,7 @@ getPhoneAcc = function(filefolder, desiredtz, test_run=FALSE) {
   fn_acc = dir(filefolder)
   outputMatrixAccstore = matrix(0,0,3)
   
-  blocksize = 2000000
+  blocksize = 1500000
   for (j in 1:length(fn_acc)) {
     cat(paste0("\nLoading file ",fn_acc[j]))
     endlastblock = 0
