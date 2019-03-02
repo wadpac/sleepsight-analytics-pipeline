@@ -13,24 +13,24 @@ desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 # Note: Assumption that all zip-files have been unzipped
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
-
+# foldersInStudyFolder = "/media/vincent/sleepsight/pdk-export_2019-02-22_326"
 # foldersInStudyFolder = "/media/vincent/sleepsight/SS08"  # for testing (comment out otherwise)
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
   cat(paste0("\n",personfolder))
   tmp = unlist(strsplit(personfolder,"/"))
-  personID = tmp[length(tmp)]
-  cat("\nPreprocess")
+  personID = tmp[length(tmp)] #now using personfolder name as personID.
+  cat("\n* Preprocess")
   outputfolder = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite)
-  cat("\nExport to csv")
+  cat("\n* Export to csv")
   csvfile = paste0("Sleepsight_overview_",personID,".csv")
   export2csv(outputfolder,csvfile,desiredtz)
-  print("\nCreate histograms")
+  cat("\n* Create histograms")
   if (do.plot == TRUE) { # simple historgram of all available data channels within a person
     RDAfiles = dir(outputfolder,full.names = TRUE)
     for (RDAfile in RDAfiles) {
-      if (length(unlist(strsplit(RDAfile,"[.]cs"))) < 2) {
+      if (length(unlist(strsplit(RDAfile,"[.]cs"))) < 2 & length(unlist(strsplit(RDAfile,"[.]pn"))) < 2) {
         load(file=RDAfile)
       }
     }
@@ -94,6 +94,6 @@ for (personfolder in foldersInStudyFolder) {
     dev.off()
   }
   timer1 = Sys.time()
-  print(timer1 - timer0)
+  cat(paste0("\n     ",timer1 - timer0))
 }
 

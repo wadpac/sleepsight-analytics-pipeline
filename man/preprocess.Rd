@@ -4,10 +4,10 @@
 \alias{preprocess}
 \title{preprocess}
 \usage{
-preprocess(studyfolder, desiredtz, overwrite = FALSE)
+preprocess(personfolder, desiredtz, overwrite = FALSE)
 }
 \arguments{
-\item{studyfolder}{folder in which we expect all the pdk and Withings output folder.}
+\item{personfolder}{folder in which we expect all the pdk and Withings output folder.}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
 

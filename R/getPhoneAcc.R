@@ -20,7 +20,7 @@ getPhoneAcc = function(filefolder, desiredtz, test_run=FALSE) {
     varnames = colnames(data.table::fread(file=fname,sep="\t",nrows = 3))
     blocki = 1
     while(stopprocess == FALSE) { # while loop iterates over the file
-      try(expr={acc = data.table::fread(file=fname,sep="\t",nrows = blocksize, skip = endlastblock)},silent=TRUE)
+      try(expr={acc = data.table::fread(file=fname,sep="\t",nrows = blocksize, skip = endlastblock,showProgress = FALSE)},silent=TRUE)
       
       if (test_run == TRUE) {
         if (blocki == 2) stopprocess = TRUE

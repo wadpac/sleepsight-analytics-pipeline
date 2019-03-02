@@ -9,11 +9,26 @@
 getLight = function(filefolder, desiredtz) {
   fn_light = dir(filefolder)
   lightstore = c()
-  for (j in 1:length(fn_light)) {
-    cat(paste0(" ",j))
-    light = data.table::fread(file=paste0(filefolder,fn_light[j]),sep="\t")
+  LFN = length(fn_light)
+  lastp = 0
+  for (j in 1:LFN ) {
+    progress = (j/LFN) * 100
+    if ((progress - lastp) > 1) {
+      cat(paste0(" ",round(progress,digits=1),"%"))
+      lastp = progress
+    }
+    light = data.table::fread(file=paste0(filefolder,fn_light[j]),sep="\t",showProgress = FALSE)
     light = as.data.frame(light)
     light = replaceVarWithSpace(light)
+    
+
+    # Forcing data to be numeric or NA to address:
+    # Error message:
+    # Error in (light$Normalized.Timestamp)/(1e+09) : 
+    #   non-numeric argument to binary operator
+    # In (caused error in set326/file113)
+    light$Normalized.Timestamp = as.numeric(light$Normalized.Timestamp)    
+    light = light[which(is.na(light$Normalized.Timestamp) == FALSE),]
     # we cannot use the default time extraction because that would only reflect
     # when data blocks are created. Instread used "Normalized Timestamp"
     light$Normalized.Timestamp.POSIX = as.POSIXlt((light$Normalized.Timestamp)/(1e+9),

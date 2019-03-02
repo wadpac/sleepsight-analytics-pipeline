@@ -5,7 +5,7 @@
 #' @return timestamps (POSIX) on which the apps were on.
 #' @export
 getAppActive = function(filename, desiredtz) {
-  app = data.table::fread(file=filename,sep="\t")
+  app = data.table::fread(file=filename,sep="\t",showProgress = FALSE)
   app = as.data.frame(app)
   app = replaceVarWithSpace(app)
   app = addPOSIX(app, desiredtz)

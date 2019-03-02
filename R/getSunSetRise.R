@@ -1,6 +1,6 @@
 #' getSunSetRise
 #'
-#' @param filefolder name of file where pdk-time-of-day is stored (txt).
+#' @param filename name of file where pdk-time-of-day is stored (txt).
 #' @param desiredtz timezone (character) in Europe/London format
 #' @return data.frame with timestamps (POSIX) for detected events (sunset/sunrise).
 #' @export

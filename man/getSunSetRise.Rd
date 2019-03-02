@@ -7,9 +7,9 @@
 getSunSetRise(filename, desiredtz)
 }
 \arguments{
-\item{desiredtz}{timezone (character) in Europe/London format}
+\item{filename}{name of file where pdk-time-of-day is stored (txt).}
 
-\item{filefolder}{name of file where pdk-time-of-day is stored (txt).}
+\item{desiredtz}{timezone (character) in Europe/London format}
 }
 \value{
 data.frame with timestamps (POSIX) for detected events (sunset/sunrise).

@@ -16,8 +16,43 @@ install_github("wadpac/sleepsight-analytics-pipeline")
 
 ## Expected data input:
 
-- Withings wearable data.
-- Mobile phone data as collected and preprocessed with the Passive data kit (PDK).
+- The data is assumed to be stored as follows:
+  - studyfolder
+    - folder with data participant 1
+      - multiple folders with data from the various channels
+    - folder with data participant 2
+      - multiple folders with data from the various channels
+- For the moment, the data channels can include:
+  - Passive data kit (pdk) data from phone.
+  - pdk data from Withings wearable.
+- Not facilitated yet, but scheduled for implementation:
+  - pdk survey data
+  - direct downloads from Withings.
+
+## Expected output:
+
+- Multiple .RData files with raw preprocessed data per channels
+- One csv file with merged data from all channels
+- png file with histograms of event distribution over 24-hour rhythm for each channel per participant asa quick check of data availablity and plausibility.
+
+Variable names:
+- lighton - whether phone captured light above 10 lux.
+- sreenon	- whether phone screen was on.
+- PSGmove	- whether phone speed or PSG indicated movement.
+- AppAct - whether phone apps were actively used.
+- batinteract	- whether phone battery was put on charge or taken off charge (only the movement of plugging it in or out is captured).
+- phoneacc - whether phone accelerates by more than 0.03 times gravitational acceleration.
+- withingsMove - whether withings wearable indicates movement.
+- deepsleep	- whether withings wearable indicates deep sleep.
+- lightsleep - whether withings wearable indicates light sleep.
+- awake	- whether withings wearable indicates awake (as part of subclasses of sleep).
+- AppHalted	- whether phone was restarting (runtime dropping to zero).
+- SunSetRise - indicates when there was sunset or sunrise.
+- hour - hour in the day.
+-	min - minute of an hour.
+- min_inday - minute in the day relative to midnight.
+
+
 
 ## Using the code
 
