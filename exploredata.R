@@ -22,6 +22,9 @@ plothist = function(namevar,CDF,df,plottitle) {
     axis(side = 1,at = Xposi,labels = Xlabe); title(main=plottitle,xlab="time")
   }
 }
+Xlabe= c("00:00","06:00","12:00","18:00","24:00") # x label for plots
+Xposi = c(0,6,12,18,24) * 60 # x positions for plots
+CX = 0.05 # cex for plotting
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
@@ -44,14 +47,12 @@ for (personfolder in foldersInStudyFolder) {
         load(file=RDAfile)
       }
     }
-    clocktimesX = c("00:00","06:00","12:00","18:00","24:00")
-    Xposi = c(0,6,12,18,24) * 60
-    Xlabe = clocktimesX
+    
     df = read.csv(file=paste0(outputfolder,"/",csvfile))
 
     png(filename = paste0(outputfolder,"/histograms_test.png"),width = 12,height = 10,units = "in",res = 400)
     par(mfrow=c(3,4))
-    CX = 0.05
+    
     CDF = colnames(df)
 
     plothist(namevar="screenon",CDF=CDF,df=df,plottitle="Phone screen is on")
