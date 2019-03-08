@@ -52,6 +52,7 @@ Variable names:
 -	min - minute of an hour.
 - min_inday - minute in the day relative to midnight.
 
+Extensions _dd and _pdk used in combination with Whithings wearable refers to direct download and pdk origin, respectively.
 
 
 ## Using the code

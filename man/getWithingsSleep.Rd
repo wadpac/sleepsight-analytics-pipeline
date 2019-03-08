@@ -4,12 +4,14 @@
 \alias{getWithingsSleep}
 \title{getWithingsSleep}
 \usage{
-getWithingsSleep(filefolder, desiredtz)
+getWithingsSleep(filefolder, desiredtz, directdownload = TRUE)
 }
 \arguments{
 \item{filefolder}{path to folder Withings-.... with Withings data files (txt).}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
+
+\item{directdownload}{boolean whether to use the direct download Withings data (TRUE) or the pdk aggregates (FALSE)}
 }
 \value{
 data.frame with timestamps (POSIX) for detected sleep stages by Withings.

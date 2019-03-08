@@ -12,8 +12,6 @@ desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 # Note: Assumption that all zip-files have been unzipped
 
-
-
 #==============================================================
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 
@@ -30,6 +28,7 @@ plothist = function(namevar="",CDF,x="",plottitle="", xpos=Xposi, xlabe=Xlabe) {
     axis(side = 1,at = xpos,labels = xlabe); title(main=plottitle,xlab="time")
   }
 }
+foldersInStudyFolder = "/media/vincent/sleepsight/SS08"
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
@@ -39,17 +38,25 @@ for (personfolder in foldersInStudyFolder) {
   
   cat("\n* Preprocess")
   outputfolder = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite)
- 
+  
   cat("\n* Export to csv")
   csvfile = paste0("Sleepsight_overview_",personID,".csv")
   export2csv(outputfolder,csvfile,desiredtz)
-  
   cat("\n* Create histograms")
   if (do.plot == TRUE) { # simple historgram of all available data channels within a person
     df = read.csv(file=paste0(outputfolder,"/",csvfile))
     CDF = colnames(df)
     png(filename = paste0(outputfolder,"/histograms_test.png"),width = 12,height = 10,units = "in",res = 400)
-    par(mfrow=c(3,4))
+    # adjust plot grid to number of expected plots:
+    Nplots = length(which(CDF %in% c("screenon", "lighton", "PSGmove", "AppAct", "batinteract",
+    "phoneacc", "withingsMove","SunSetRise", "AppHalted", "lightsleep_pdk", "deepsleep_pdk", "awake_pdk", 
+    "lightsleep_dd", "deepsleep_dd","awake_dd") == TRUE))
+    DimPlots = ceiling(sqrt(Nplots))
+    if ((DimPlots-1)*DimPlots > Nplots) {
+      par(mfrow=c(DimPlots-1,DimPlots))
+    } else {
+      par(mfrow=c(DimPlots,DimPlots))
+    }
     plothist(namevar="screenon",CDF=CDF,x=df,plottitle="Phone screen is on")
     plothist(namevar="lighton",CDF=CDF,x=df,plottitle="Phone light level above 10")
     plothist(namevar="PSGmove",CDF=CDF,x=df,plottitle="Phone PSG/Speed indicate movement")
@@ -59,9 +66,12 @@ for (personfolder in foldersInStudyFolder) {
     plothist(namevar="withingsMove" ,CDF=CDF,x=df,plottitle="Withings moves / Body info entered")
     plothist(namevar="SunSetRise" ,CDF=CDF,x=df,plottitle="sunset or sunrise")
     plothist(namevar="AppHalted" ,CDF=CDF,x=df,plottitle="AppHalted (restarted)")
-    plothist(namevar="lightsleep" ,CDF=CDF,x=df,plottitle="Withings LightSleep")
-    plothist(namevar="deepsleep" ,CDF=CDF,x=df,plottitle="Withings deep-sleep")
-    plothist(namevar="awake" ,CDF=CDF,x=df,plottitle="Withings awake")
+    plothist(namevar="lightsleep_pdk" ,CDF=CDF,x=df,plottitle="Withings LightSleep PDK")
+    plothist(namevar="deepsleep_pdk" ,CDF=CDF,x=df,plottitle="Withings deep-sleep PDK")
+    plothist(namevar="awake_pdk" ,CDF=CDF,x=df,plottitle="Withings awake PDK")
+    plothist(namevar="lightsleep_dd" ,CDF=CDF,x=df,plottitle="Withings LightSleep DD")
+    plothist(namevar="deepsleep_dd" ,CDF=CDF,x=df,plottitle="Withings deep-sleep DD")
+    plothist(namevar="awake_dd" ,CDF=CDF,x=df,plottitle="Withings awake DD")
     dev.off()
   }
   timer1 = Sys.time()

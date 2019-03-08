@@ -8,6 +8,12 @@
 #' @importFrom utils write.csv
 export2csv = function(outputfolder, csvfile, desiredtz) {
   if (!file.exists(paste0(outputfolder,"/",csvfile))) {
+    
+    # to avoid warning "no visible binding for global variable " by R CMD check
+    # when it sees that we are using undeclared objects, which actually are loaded
+    PhoneAcc =withings_act = withings_actDD = AppHalted = c()
+    rm(PhoneAcc, withings_act, withings_actDD, AppHalted)
+    
     RDAfiles = dir(outputfolder,full.names = TRUE)
     for (RDAfile in RDAfiles) {
       if (length(unlist(strsplit(RDAfile,"[.]cs"))) < 2 & length(unlist(strsplit(RDAfile,"[.]pn"))) < 2) {
@@ -66,23 +72,41 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       phoneacc = data.frame(time = PhoneAccTimes, phoneacc = TRUE)
       df = addToDF(df,phoneacc)
     }
-    if ("WithingsActivity" %in% ls()) {
-      WithingsMoveTimes = WithingsActivity$timestamp[which(WithingsActivity$infoentered == TRUE | WithingsActivity$movement == TRUE)] 
+    if ("withings_act" %in% ls()) { # PDK
+      WithingsMoveTimes = withings_act$timestamp[which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)] 
       WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
-      withingsMove = data.frame(time = WithingsMoveTimes, withingsMove  = TRUE)
+      withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_pdk  = TRUE)
       df = addToDF(df,withingsMove)
     }
-    if ("WithingsSleep" %in% ls()) {
-      WithingsSleep=WithingsSleep[,-which(colnames(WithingsSleep) == "statecode")]
-      WSN = colnames(WithingsSleep)
-      colnames(WithingsSleep)[which(WSN=="statename")] = "withingsSleepState"
-      WithingsSleep$withingsSleepState =as.character(WithingsSleep$withingsSleepState )
-      sleep_deep = data.frame(time=WithingsSleep$timestamp[which(WithingsSleep$withingsSleepState=="deep-sleep")],deepsleep=TRUE)
-      sleep_light = data.frame(time=WithingsSleep$timestamp[which(WithingsSleep$withingsSleepState=="light-sleep")],lightsleep=TRUE)
-      sleep_awake = data.frame(time=WithingsSleep$timestamp[which(WithingsSleep$withingsSleepState=="awake")],awake=TRUE)
-      df = addToDF(df,sleep_deep)
-      df = addToDF(df,sleep_light)
-      df = addToDF(df,sleep_awake)
+    
+    if ("withings_actDD" %in% ls()) { # Direct download
+      WithingsMoveTimes = withings_actDD$timestamp[which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)] 
+      WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
+      withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_dd  = TRUE)
+      df = addToDF(df,withingsMove)
+    }
+    if ("withings_sleep" %in% ls()) { # PDK
+      withings_sleep=withings_sleep[,-which(colnames(withings_sleep) == "statecode")]
+      WSN = colnames(withings_sleep)
+      colnames(withings_sleep)[which(WSN=="statename")] = "sleepstate"
+      withings_sleep$sleepstate =as.character(withings_sleep$sleepstate )
+      sleep_deep_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="deep-sleep")],deepsleep_pdk=TRUE)
+      sleep_light_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="light-sleep")],lightsleep_pdk=TRUE)
+      sleep_awake_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="awake")],awake_pdk=TRUE)
+      df = addToDF(df,sleep_deep_pdk)
+      df = addToDF(df,sleep_light_pdk)
+      df = addToDF(df,sleep_awake_pdk)
+    }
+    if ("withings_sleepDD" %in% ls()) { # Direct download
+      WSN = colnames(withings_sleepDD)
+      colnames(withings_sleepDD)[which(WSN=="statecode")] = "sleepstate"
+      withings_sleepDD$sleepstate =as.character(withings_sleepDD$sleepstate )
+      sleep_deep_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="deep-sleep")],deepsleep_dd=TRUE)
+      sleep_light_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="light-sleep")],lightsleep_dd=TRUE)
+      sleep_awake_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="awake")],awake_dd=TRUE)
+      df = addToDF(df,sleep_deep_dd)
+      df = addToDF(df,sleep_light_dd)
+      df = addToDF(df,sleep_awake_dd)
     }
     if ("AppHalted" %in% ls()) {
       AppHaltedTimes = aggregatePerMinute(AppHalted, desiredtz) # from 1 to 60 seconds

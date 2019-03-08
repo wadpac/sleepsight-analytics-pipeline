@@ -11,6 +11,46 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   
   outputfolder = paste0(personfolder,"/processinginR")
   if (!dir.exists(outputfolder)) dir.create(outputfolder)
+  #============================
+  # Withings
+  withingsfolder = c()
+  withingsi = grep(pattern = "Withings-",x = channelfolders)
+  if (length(withingsi) > 0) withingsfolder = channelfolders[withingsi]
+  if (length(withingsfolder) > 0) {
+    cat("\nloading Withings-Direct-Download")
+    directdownload = TRUE
+    withings_sleepDD = withings_actDD = c()
+    fullpathout = paste0(outputfolder,"/Withings-DirectDownload.RData")
+    if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
+      for (wfi in 1:length(withingsfolder)) {
+        filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
+        # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
+        withings_actDD = getWithingsActivity(filefolder, desiredtz, directdownload)
+        withings_sleepDD = getWithingsSleep(filefolder, desiredtz, directdownload)
+      }
+      if (length(withings_actDD) > 0 | length(withings_sleepDD) > 0) {
+        save(withings_actDD, withings_sleepDD,file=fullpathout)
+      }
+    }
+    cat("\nloading Withings-PDK")
+    directdownload = FALSE
+    withings_sleep = withings_act = c()
+    fullpathout = paste0(outputfolder,"/Withings-PDK.RData")
+    if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
+      for (wfi in 1:length(withingsfolder)) {
+        filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
+        # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
+        withings_act = getWithingsActivity(filefolder, desiredtz, directdownload)
+        withings_sleep = getWithingsSleep(filefolder, desiredtz, directdownload)
+      }
+      if (length(withings_act) > 0 | length(withings_sleep) > 0) {
+        save(withings_act, withings_sleep,file=fullpathout)
+      }
+      
+    }
+  }
+  #==========================
+  # Phone data
   if ("./pdk-device-battery" %in% channelfolders) {
     cat("\nloading pdk-device-battery")
     batfolder = "pdk-device-battery/"
@@ -20,24 +60,6 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
       batInteractTimes = getBatInteract(filename, desiredtz) # timestamps when phone was either put on charged or plugged out.
       save(batInteractTimes,file=fullpathout)
-    }
-  }
-  withingsfolder = c()
-  withingsi = grep(pattern = "Withings-",x = channelfolders)
-  if (length(withingsi) > 0) withingsfolder = channelfolders[withingsi]
-  if (length(withingsfolder) > 0) {
-    cat("\nloading Withings-wearable-sleep-activity")
-    WithingsSleep = WithingsActivity = c()
-    fullpathout = paste0(outputfolder,"/WithingsActivity.RData")
-    if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
-      for (wfi in 1:length(withingsfolder)) {
-        filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
-        # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
-        WithingsSleep = getWithingsSleep(filefolder, desiredtz)
-        WithingsActivity = getWithingsActivity(filefolder, desiredtz)
-      }
-      if (length(WithingsSleep) > 0) save(WithingsSleep,file=paste0(outputfolder,"/WithingsSleep.RData"))
-      if (length(WithingsActivity) > 0) save(WithingsActivity,file=fullpathout)
     }
   }
   if ("./pdk-location" %in% channelfolders) {
