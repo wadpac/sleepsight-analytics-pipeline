@@ -24,10 +24,13 @@ install_github("wadpac/sleepsight-analytics-pipeline")
       - multiple folders with data from the various channels
 - For the moment, the data channels can include:
   - Passive data kit (pdk) data from phone.
-  - pdk data from Withings wearable.
+  - Folder with data from Withings wearable, identified as any string with 'Withings-' in it.
+    Inside this folder there will be subfolders for:
+    - Direct downloads from Withings.
+    - pdk data for Withings.
 - Not facilitated yet, but scheduled for implementation:
   - pdk survey data
-  - direct downloads from Withings.
+  
 
 ## Expected output:
 
