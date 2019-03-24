@@ -27,7 +27,9 @@ getLight = function(filefolder, desiredtz) {
     # Error in (light$Normalized.Timestamp)/(1e+09) : 
     #   non-numeric argument to binary operator
     # In (caused error in set326/file113)
+    options(warn=-1)
     light$Normalized.Timestamp = as.numeric(light$Normalized.Timestamp)    
+    options(warn=0)
     light = light[which(is.na(light$Normalized.Timestamp) == FALSE),]
     # we cannot use the default time extraction because that would only reflect
     # when data blocks are created. Instread used "Normalized Timestamp"
