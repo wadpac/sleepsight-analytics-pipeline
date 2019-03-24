@@ -12,10 +12,11 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   
   # get source id:
   ID = c()
+  print(txt_files_in_folder)
   if (length(txt_files_in_folder) > 0) { # Sleep Survey
     sleepsurveyFile = grep("sleep-survey",x = txt_files_in_folder)
     appEventFile = grep("pdk_pdk-app-event",x = txt_files_in_folder)
-    tmp3 = unique(appEventFile,sleepsurveyFile)
+    tmp3 = unique(c(appEventFile,sleepsurveyFile))
     if (length(tmp3) > 0) {
       filename= txt_files_in_folder[tmp3[1]]
       temp = data.table::fread(file=filename,sep="\t")
