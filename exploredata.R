@@ -104,8 +104,8 @@ for (personfolder in foldersInStudyFolder) {
   D5 = merge(D5,D4_inconclusive,by="date")
   
   # TO DO:
-  # * Exclude days with less than 10 minutes active and/or less than 10 minutes sleep
-  D5 = D5[which(D5$active > 10 & D5$sleep > 10),]
+  # * Exclude days with less than 10 minutes active and/or less than 10 minutes sleep, or more than a third of the data is missing
+  D5 = D5[which(D5$active > 10 & D5$sleep > 10 | D5$missing > (1440*(1/3)) | D5$incomplete > (1440*(1/3))),]
   # * Go back to D3 (1 minute resolution data)
   #   and infer sleep/wake rythm with rolling window only for days with reliable data in D5
   #    e.g. 1 hour of inactivity becomes sleep (accepting tiny fraction of missing or inconclusive data)
@@ -113,7 +113,7 @@ for (personfolder in foldersInStudyFolder) {
   # * Calculate basic descriptives across rolling 24 windows:
   #   - mean, L5, M10, entropy, sleeponset and waking up time.
   # * Calculate descriptives across rolling X days (7/14?)
-  
+  # * Move all these steps to a seperate function
   
   #------------------------------------------------------------------
   timer1 = Sys.time()
