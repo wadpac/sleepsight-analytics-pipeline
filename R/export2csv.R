@@ -49,7 +49,7 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
     }
     if ("ScreenOnTimes" %in% ls()) {
       ScreenOnTimes = aggregatePerMinute(ScreenOnTimes, desiredtz) # from 1 to 60 seconds
-      ScreenOn = data.frame(time = ScreenOnTimes,sreenon = TRUE)
+      ScreenOn = data.frame(time = ScreenOnTimes,screenon = TRUE)
       df = addToDF(df,ScreenOn)
     }
     if ("MovementPSGTimes" %in% ls()) {
@@ -78,9 +78,9 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_pdk  = TRUE)
       df = addToDF(df,withingsMove)
     }
-    
     if ("withings_actDD" %in% ls()) { # Direct download
       WithingsMoveTimes = withings_actDD$timestamp[which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)] 
+      WithingsMoveTimes = as.POSIXlt(as.character(WithingsMoveTimes),tz=desiredtz)
       WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
       withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_dd  = TRUE)
       df = addToDF(df,withingsMove)
@@ -121,12 +121,42 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       SunSetRise=SunSetRise[,-which(colnames(SunSetRise) == "timestamp")]
       df = addToDF(df,SunSetRise)
     }
+    if ("SleepSurvey" %in% ls()) {
+      # Try to unlogical some rise- before bed-times
+      rst = as.POSIXlt(SleepSurvey$risetime)$hour
+      bdt = as.POSIXlt(SleepSurvey$bedtime)$hour
+      srt = as.POSIXlt(SleepSurvey$surveytime)$hour
+      bedtime_min24 = which(bdt > 18 & rst < bdt) # bedtime -24
+      bedtime_min12 = which(bdt <= 18 & rst < bdt) # bedtime -12
+      risetime_min12 = which(rst > 18 & rst < bdt) # risetime -12
+      risetime_plus24 = which(rst >= srt & rst < (srt + 4) & rst < bdt) # risetime +24
+      if (length(risetime_min12) > 0) SleepSurvey$risetime[risetime_min12] = SleepSurvey$risetime[risetime_min12] - (12*3600)
+      if (length(bedtime_min12) > 0) SleepSurvey$bedtime[bedtime_min12] = SleepSurvey$bedtime[bedtime_min12] - (12*3600)
+      if (length(bedtime_min24) > 0) SleepSurvey$bedtime[bedtime_min24] = SleepSurvey$bedtime[bedtime_min24] - (24*3600)
+      if (length(risetime_plus24) > 0) SleepSurvey$risetime[risetime_plus24] = SleepSurvey$risetime[risetime_plus24] + (24*3600)
+    
+      # Add time in bed (self-reported)
+      SleepSurvey$bedtime_num = as.numeric(SleepSurvey$bedtime) # work with numeric time
+      SleepSurvey$risetime_num = as.numeric(SleepSurvey$risetime) # work with numeric time
+      inplausible = which(SleepSurvey$risetime_num < SleepSurvey$bedtime_num)
+      if (length(inplausible) > 0) SleepSurvey = SleepSurvey[-inplausible,]
+      InBedTimes = c()
+      for (jj in 1:nrow(SleepSurvey)) {
+        InBedTimes = c(InBedTimes, seq(SleepSurvey$bedtime_num[jj],SleepSurvey$risetime_num[jj],by=60))
+      }
+      InBedTimes = as.POSIXlt(InBedTimes, origin="1970-1-1", tz=desiredtz)
+      inbed = data.frame(time=InBedTimes, InBed=TRUE)
+      df = addToDF(df,inbed)
+      # add survey
+      survey = SleepSurvey[,c("surveytime","positiveFeelings","negativeFeelings","Sleep.Quality.Value","Sleep.Duration")]
+      colnames(survey)[which(colnames(survey) == "surveytime")] = "time"
+      df = addToDF(df,survey)
+    }
     # add hour in the day to ease plotting
     df$hour = as.POSIXlt(df$time)$hour
     df$min = as.POSIXlt(df$time)$min
     df$min_inday = df$hour * 60 + df$min
     clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
-    # df$clock = as.POSIXct(df$time,format="%H:%M:%S",tz=desiredtz)
     write.csv(df,file=paste0(outputfolder,"/",csvfile),row.names = FALSE)
   }
 }

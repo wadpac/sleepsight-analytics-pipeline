@@ -12,5 +12,21 @@ replaceVarWithSpace = function(x) {
   if("Light Level" %in% colnames(x) == TRUE) x$Light.Level = x$`Light Level`
   if("App Runtime" %in% colnames(x) == TRUE) x$App.Runtime = x$`App Runtime`
   if("Is Day" %in% colnames(x) == TRUE) x$Is.Day = x$`Is Day`
+  colnames(x) = gsub(pattern = " ",replacement =  ".",x = colnames(x))
+  colnames(x) = gsub(pattern = "&",replacement =  "AND",x = colnames(x))
+
+  # Bedtime Hour
+  # Bedtime Minute
+  # Risetime Hour
+  # Risetime Minute
+  # Sleep Duration
+  # Sleep Quality Value
+  # In Control
+  # Trouble Concentrating
+  # Preoccupied By Thoughts
+  # Others Dislike Me Confused
+  # Others Influence My Thoughts
+  # Unusual Sights & Sounds   
+  
   return(x)
 }

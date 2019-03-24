@@ -8,8 +8,31 @@
 preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   setwd(personfolder)
   channelfolders = list.dirs(".", recursive=FALSE)
+  txt_files_in_folder = dir(".", recursive=FALSE,pattern = ".tx")
   
-  outputfolder = paste0(personfolder,"/processinginR")
+  # get source id:
+  ID = c()
+  if (length(txt_files_in_folder) > 0) { # Sleep Survey
+    sleepsurveyFile = grep("sleep-survey",x = txt_files_in_folder)
+    appEventFile = grep("pdk_pdk-app-event",x = txt_files_in_folder)
+    tmp3 = unique(appEventFile,sleepsurveyFile)
+    if (length(tmp3) > 0) {
+      filename= txt_files_in_folder[tmp3[1]]
+      temp = data.table::fread(file=filename,sep="\t")
+      if (nrow(temp) == 0 & length(tmp3) > 0) {
+        filename= txt_files_in_folder[tmp3[2]]
+        temp = data.table::fread(file=filename,sep="\t")
+      }
+      tmpID = unlist(strsplit(temp$Source[1],"@"))[1]
+      rem_study = unlist(strsplit(tmpID,"study"))
+      if (length(rem_study) == 2) {
+        ID = rem_study[2]
+      } else {
+        ID = tmpID
+      }
+    }
+  }
+  outputfolder = paste0(personfolder,"/processinginR_SS",ID)
   if (!dir.exists(outputfolder)) dir.create(outputfolder)
   #============================
   # Withings
@@ -17,7 +40,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   withingsi = grep(pattern = "Withings-",x = channelfolders)
   if (length(withingsi) > 0) withingsfolder = channelfolders[withingsi]
   if (length(withingsfolder) > 0) {
-    cat("\nloading Withings-Direct-Download")
+    cat("\nWithings-Direct-Download")
     directdownload = TRUE
     withings_sleepDD = withings_actDD = c()
     fullpathout = paste0(outputfolder,"/Withings-DirectDownload.RData")
@@ -32,7 +55,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
         save(withings_actDD, withings_sleepDD,file=fullpathout)
       }
     }
-    cat("\nloading Withings-PDK")
+    cat("\nWithings-PDK")
     directdownload = FALSE
     withings_sleep = withings_act = c()
     fullpathout = paste0(outputfolder,"/Withings-PDK.RData")
@@ -52,7 +75,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   #==========================
   # Phone data
   if ("./pdk-device-battery" %in% channelfolders) {
-    cat("\nloading pdk-device-battery")
+    cat("\npdk-device-battery")
     batfolder = "pdk-device-battery/"
     fn_bat = dir(batfolder)
     filename = paste0(batfolder,fn_bat)
@@ -63,7 +86,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-location" %in% channelfolders) {
-    cat("\nloading pdk-location")
+    cat("\npdk-location")
     locfolder = "pdk-location/"
     fn_loc = dir(locfolder)
     filename = paste0(locfolder,fn_loc)
@@ -74,7 +97,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-system-status" %in% channelfolders) {
-    cat("\nloading pdk-system-status")  # Runtime information is relevant for checking data missingness
+    cat("\npdk-system-status")  # Runtime information is relevant for checking data missingness
     statusfolder = "pdk-system-status/"
     fn_status = dir(statusfolder)
     filename = paste0(statusfolder,fn_status)
@@ -85,7 +108,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-sensor-accelerometer" %in% channelfolders) {
-    cat("\nloading pdk-sensor-accelerometer")
+    cat("\npdk-sensor-accelerometer")
     accfolder = "pdk-sensor-accelerometer/"
     fullpathout = paste0(outputfolder,"/PhoneAcc.RData")
     if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
@@ -101,7 +124,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-sensor-light" %in% channelfolders) {
-    cat("\nloading pdk-sensor-light")
+    cat("\npdk-sensor-light")
     # Light probably not useful, because light can change without the person change activity state
     filefolder = "pdk-sensor-light/"
     fullpathout = paste0(outputfolder,"/lightOnTimes.RData")
@@ -111,7 +134,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-foreground-application" %in% channelfolders) {
-    cat("\nloading pdk-foreground-application")
+    cat("\npdk-foreground-application")
     appfolder = "pdk-foreground-application/"
     fn_app = dir(appfolder)
     filename = paste0(appfolder,fn_app)
@@ -122,7 +145,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-screen-state" %in% channelfolders) {
-    cat("\nloading pdk-screen-state")
+    cat("\npdk-screen-state")
     # Note: probably not relevant, because screen activity does not necessarily
     # say much about whether the person interacted with the phone, e.g. incoming call
     # or messages...?
@@ -136,13 +159,24 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     }
   }
   if ("./pdk-time-of-day" %in% channelfolders) {
-    cat("\nloading pdk-time-of-day")
+    cat("\npdk-time-of-day")
     todfolder = "pdk-time-of-day/"
     fn_tod = dir(todfolder)
     filename = paste0(todfolder,fn_tod)
     SunSetRise = getSunSetRise(filename, desiredtz)
     save(SunSetRise,file=paste0(outputfolder,"/SunSetRise.RData"))
   }
-  # }
+  if (length(txt_files_in_folder) > 0) { # Sleep Survey
+    cat("\npdk-sleep-survey")
+    sleepsurveyFile = grep("sleep-survey",x = txt_files_in_folder)
+    if (length(sleepsurveyFile) > 0) {
+      fullpathout = paste0(outputfolder,"/SleepSurvey.RData")
+      if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
+      filename = txt_files_in_folder[sleepsurveyFile]
+      SleepSurvey = getSurvey(filename,desiredtz)
+      save(SleepSurvey,file=paste0(outputfolder,"/SleepSurvey.RData"))
+      }
+    }
+  }
   return(outputfolder)
 }
