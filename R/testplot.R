@@ -23,7 +23,8 @@ testplot = function(outputfolder, csvfile) {
   png(filename = paste0(outputfolder,"/histograms_test.png"),width = 12,height = 10,units = "in",res = 400)
   # adjust plot grid to number of expected plots:
   Nplots = length(which(CDF %in% c("screenon", "lighton", "PSGmove", "AppAct", "batinteract",
-                                   "phoneacc", "withingsMove","SunSetRise", "AppHalted", "lightsleep_pdk", "deepsleep_pdk", "awake_pdk", 
+                                   "phoneacc", "withingsMove_pdk","withingsMove_dd","SunSetRise", 
+                                   "AppHalted", "lightsleep_pdk", "deepsleep_pdk", "awake_pdk", 
                                    "lightsleep_dd", "deepsleep_dd","awake_dd","InBed") == TRUE))
   DimPlots = ceiling(sqrt(Nplots))
   if ((DimPlots-1)*DimPlots > Nplots) {
@@ -37,7 +38,8 @@ testplot = function(outputfolder, csvfile) {
   plothist(namevar="AppAct",CDF=CDF,x=df,plottitle="Phone foreground app is on")
   plothist(namevar="batinteract",CDF=CDF,x=df,plottitle="Phone battery put on/off charge")
   plothist(namevar="phoneacc" ,CDF=CDF,x=df,plottitle="Phone accelerates > 0.03 times gravity")
-  plothist(namevar="withingsMove" ,CDF=CDF,x=df,plottitle="Withings moves / Body info entered")
+  plothist(namevar="withingsMove_pdk" ,CDF=CDF,x=df,plottitle="Withings moves / Body info entered PDK")
+  plothist(namevar="withingsMove_dd" ,CDF=CDF,x=df,plottitle="Withings moves / Body info entered DD")
   plothist(namevar="SunSetRise" ,CDF=CDF,x=df,plottitle="sunset or sunrise")
   plothist(namevar="AppHalted" ,CDF=CDF,x=df,plottitle="AppHalted (restarted)")
   plothist(namevar="lightsleep_pdk" ,CDF=CDF,x=df,plottitle="Withings LightSleep PDK")

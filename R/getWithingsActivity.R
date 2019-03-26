@@ -116,6 +116,17 @@ getWithingsActivity = function(filefolder, desiredtz, directdownload = TRUE) {
       
     }
   }
-  withingsActivity = base::merge(withings_enterbodyinfo,withings_personactive,by ="timestamp",all=TRUE)
+  NRWP = nrow(withings_personactive)
+  NRWE = nrow(withings_enterbodyinfo)  
+  if (NRWP > 0 & NRWE > 0) {
+    withingsActivity = base::merge(withings_enterbodyinfo,withings_personactive,by ="timestamp",all=TRUE)
+  } else if (NRWP > 0 & NRWE == 0){
+    withingsActivity = withings_personactive
+  } else if (NRWP == 0 & NRWE > 0){
+    withingsActivity = withings_enterbodyinfo
+  } else if (NRWP == 0 & NRWE == 0){
+    withingsActivity = c()
+  }
   return(withingsActivity)
 }
+

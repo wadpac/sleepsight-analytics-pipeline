@@ -7,15 +7,14 @@
 #' @export
 preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   setwd(personfolder)
+  getwd()
   channelfolders = list.dirs(".", recursive=FALSE)
   txt_files_in_folder = dir(".", recursive=FALSE,pattern = ".tx")
-  
   # get source id:
   ID = c()
-  print(txt_files_in_folder)
   if (length(txt_files_in_folder) > 0) { # Sleep Survey
     sleepsurveyFile = grep("sleep-survey",x = txt_files_in_folder)
-    appEventFile = grep("pdk_pdk-app-event",x = txt_files_in_folder)
+    appEventFile = grep("pdk-app-event",x = txt_files_in_folder)
     tmp3 = unique(c(appEventFile,sleepsurveyFile))
     if (length(tmp3) > 0) {
       filename= txt_files_in_folder[tmp3[1]]
@@ -39,38 +38,60 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   # Withings
   withingsfolder = c()
   withingsi = grep(pattern = "Withings-",x = channelfolders)
-  if (length(withingsi) > 0) withingsfolder = channelfolders[withingsi]
+  direct.download.withings = TRUE
+  if (length(withingsi) > 0) {
+    withingsfolder = channelfolders[withingsi]
+  } else { # files are not in Withings folder yet, create the folder and copy them there
+    cat("\n Copying files to new Withings-data folder")
+    withingsfolder = "./Withings-data" 
+    dir.create(withingsfolder)
+    fn_wit = dir(".",recursive = F,full.names = F) # filenames in Withings folder
+    withingsfiles = fn_wit[grep("withings",x = fn_wit)]
+    for (ki in 1:length(withingsfiles)) {
+      file.copy(from = withingsfiles[ki],
+                to = paste0(withingsfolder,"/",withingsfiles[ki]))
+    }
+  }
   if (length(withingsfolder) > 0) {
-    cat("\nWithings-Direct-Download")
-    directdownload = TRUE
-    withings_sleepDD = withings_actDD = c()
-    fullpathout = paste0(outputfolder,"/Withings-DirectDownload.RData")
-    if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
-      for (wfi in 1:length(withingsfolder)) {
-        filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
-        # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
-        withings_actDD = getWithingsActivity(filefolder, desiredtz, directdownload)
-        withings_sleepDD = getWithingsSleep(filefolder, desiredtz, directdownload)
-      }
-      if (length(withings_actDD) > 0 | length(withings_sleepDD) > 0) {
-        save(withings_actDD, withings_sleepDD,file=fullpathout)
+    # check whether there is direct download data or pdk data
+    fn_wit = dir(withingsfolder,recursive = T,full.names = T) # filenames in Withings folder
+    csvfiles = grep("[.]cs",x = fn_wit)
+    txtfiles = grep("[.]tx",x = fn_wit)
+    fn_wit_csv = fn_wit[csvfiles]
+    fn_wit_txt = fn_wit[txtfiles]
+    if (length(fn_wit_csv) > 0) {
+      cat("\nWithings-Direct-Download")
+      directdownload = TRUE
+      withings_sleepDD = withings_actDD = c()
+      fullpathout = paste0(outputfolder,"/Withings-DirectDownload.RData")
+      if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
+        for (wfi in 1:length(withingsfolder)) {
+          filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
+          # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
+          withings_actDD = getWithingsActivity(filefolder, desiredtz, directdownload)
+          withings_sleepDD = getWithingsSleep(filefolder, desiredtz, directdownload)
+        }
+        if (length(withings_actDD) > 0 | length(withings_sleepDD) > 0) {
+          save(withings_actDD, withings_sleepDD,file=fullpathout)
+        }
       }
     }
-    cat("\nWithings-PDK")
-    directdownload = FALSE
-    withings_sleep = withings_act = c()
-    fullpathout = paste0(outputfolder,"/Withings-PDK.RData")
-    if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
-      for (wfi in 1:length(withingsfolder)) {
-        filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
-        # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
-        withings_act = getWithingsActivity(filefolder, desiredtz, directdownload)
-        withings_sleep = getWithingsSleep(filefolder, desiredtz, directdownload)
+    if (length(fn_wit_txt) > 0) {
+      cat("\nWithings-PDK")
+      directdownload = FALSE
+      withings_sleep = withings_act = c()
+      fullpathout = paste0(outputfolder,"/Withings-PDK.RData")
+      if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
+        for (wfi in 1:length(withingsfolder)) {
+          filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
+          # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
+          withings_act = getWithingsActivity(filefolder, desiredtz, directdownload)
+          withings_sleep = getWithingsSleep(filefolder, desiredtz, directdownload)
+        }
+        if (length(withings_act) > 0 | length(withings_sleep) > 0) {
+          save(withings_act, withings_sleep,file=fullpathout)
+        }
       }
-      if (length(withings_act) > 0 | length(withings_sleep) > 0) {
-        save(withings_act, withings_sleep,file=fullpathout)
-      }
-      
     }
   }
   #==========================
@@ -164,8 +185,11 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     todfolder = "pdk-time-of-day/"
     fn_tod = dir(todfolder)
     filename = paste0(todfolder,fn_tod)
-    SunSetRise = getSunSetRise(filename, desiredtz)
-    save(SunSetRise,file=paste0(outputfolder,"/SunSetRise.RData"))
+    fullpathout = paste0(outputfolder,"/SunSetRise.RData")
+    if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
+      SunSetRise = getSunSetRise(filename, desiredtz)
+      save(SunSetRise,file=fullpathout)
+    }
   }
   if (length(txt_files_in_folder) > 0) { # Sleep Survey
     cat("\npdk-sleep-survey")
@@ -173,9 +197,9 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     if (length(sleepsurveyFile) > 0) {
       fullpathout = paste0(outputfolder,"/SleepSurvey.RData")
       if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
-      filename = txt_files_in_folder[sleepsurveyFile]
-      SleepSurvey = getSurvey(filename,desiredtz)
-      save(SleepSurvey,file=paste0(outputfolder,"/SleepSurvey.RData"))
+        filename = txt_files_in_folder[sleepsurveyFile]
+        SleepSurvey = getSurvey(filename,desiredtz)
+        save(SleepSurvey,file=paste0(outputfolder,"/SleepSurvey.RData"))
       }
     }
   }

@@ -73,13 +73,17 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       df = addToDF(df,phoneacc)
     }
     if ("withings_act" %in% ls()) { # PDK
-      WithingsMoveTimes = withings_act$timestamp[which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)] 
+      select = which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)
+      if (length(select) == 0) select = which(withings_act$movement == TRUE)
+      WithingsMoveTimes = withings_act$timestamp[] 
       WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
       withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_pdk  = TRUE)
       df = addToDF(df,withingsMove)
     }
     if ("withings_actDD" %in% ls()) { # Direct download
-      WithingsMoveTimes = withings_actDD$timestamp[which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)] 
+      select = which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)
+      if (length(select) == 0) select = which(withings_actDD$movement == TRUE)
+      WithingsMoveTimes = withings_actDD$timestamp[select] 
       WithingsMoveTimes = as.POSIXlt(as.character(WithingsMoveTimes),tz=desiredtz)
       WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
       withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_dd  = TRUE)
