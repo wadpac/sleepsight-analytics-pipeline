@@ -73,18 +73,25 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       df = addToDF(df,phoneacc)
     }
     if ("withings_act" %in% ls()) { # PDK
-      select = which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)
-      if (length(select) == 0) select = which(withings_act$movement == TRUE)
-      WithingsMoveTimes = withings_act$timestamp[] 
+      if ("infoentered" %in% colnames(withings_act)) {
+        select = which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)
+      } else {
+        select = which(withings_act$movement == TRUE)
+      }
+      WithingsMoveTimes = withings_act$timestamp[select] 
+      WithingsMoveTimes = as.POSIXlt(WithingsMoveTimes,origin="1970-1-1",tz=desiredtz)
       WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
       withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_pdk  = TRUE)
       df = addToDF(df,withingsMove)
     }
     if ("withings_actDD" %in% ls()) { # Direct download
-      select = which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)
-      if (length(select) == 0) select = which(withings_actDD$movement == TRUE)
+      if ("infoentered" %in% colnames(withings_actDD)) {
+        select = which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)
+      } else {
+        select = which(withings_actDD$movement == TRUE)
+      }
       WithingsMoveTimes = withings_actDD$timestamp[select] 
-      WithingsMoveTimes = as.POSIXlt(as.character(WithingsMoveTimes),tz=desiredtz)
+      WithingsMoveTimes = as.POSIXlt(as.character(WithingsMoveTimes),origin="1970-1-1",tz=desiredtz)
       WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
       withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_dd  = TRUE)
       df = addToDF(df,withingsMove)
@@ -93,7 +100,7 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       withings_sleep=withings_sleep[,-which(colnames(withings_sleep) == "statecode")]
       WSN = colnames(withings_sleep)
       colnames(withings_sleep)[which(WSN=="statename")] = "sleepstate"
-      withings_sleep$sleepstate =as.character(withings_sleep$sleepstate )
+      withings_sleep$sleepstate =as.character(withings_sleep$sleepstate)
       sleep_deep_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="deep-sleep")],deepsleep_pdk=TRUE)
       sleep_light_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="light-sleep")],lightsleep_pdk=TRUE)
       sleep_awake_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="awake")],awake_pdk=TRUE)
@@ -104,7 +111,7 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
     if ("withings_sleepDD" %in% ls()) { # Direct download
       WSN = colnames(withings_sleepDD)
       colnames(withings_sleepDD)[which(WSN=="statecode")] = "sleepstate"
-      withings_sleepDD$sleepstate =as.character(withings_sleepDD$sleepstate )
+      withings_sleepDD$sleepstate =as.character(withings_sleepDD$sleepstate)
       sleep_deep_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="deep-sleep")],deepsleep_dd=TRUE)
       sleep_light_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="light-sleep")],lightsleep_dd=TRUE)
       sleep_awake_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="awake")],awake_dd=TRUE)
