@@ -4,7 +4,7 @@
 \alias{summarise}
 \title{summarise}
 \usage{
-summarise(outputfolder, csvfile, desiredtz)
+summarise(outputfolder, csvfile, desiredtz, minmisratio = 1/3)
 }
 \arguments{
 \item{outputfolder}{RData datafile where the output of preprocess is stored.}
@@ -12,6 +12,8 @@ summarise(outputfolder, csvfile, desiredtz)
 \item{csvfile}{file name where data overview needs to be stored}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
+
+\item{minmisratio}{minimum missing ratio per day, if more data is missing then the day will be ignored}
 }
 \value{
 List with two data frames: D24HR and D5min
