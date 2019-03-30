@@ -48,7 +48,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
     } else { # files are not in Withings folder yet, create the folder and copy them there
       cat("\n Copying files to new Withings-data folder")
       withingsfolder = paste0(personfolder,"/Withings-data" )
-      dir.create(withingsfolder)
+      if (!dir.exists(withingsfolder)) dir.create(withingsfolder)
       fn_wit = dir(personfolder,recursive = F,full.names = F) # filenames in Withings folder
       withingsfiles = fn_wit[grep("withings",x = fn_wit)]
       for (ki in 1:length(withingsfiles)) {

@@ -34,16 +34,16 @@ for (personfolder in foldersInStudyFolder) {
   
   cat("\n* Aggregate data per: day, 30 minutes, and 1 minute")
   aggregatefile = paste0(outputfolder,"/agg.sleepsight.RData")
-  # if (!file.exists(aggregatefile)) {
-  out = agg.sleepsight(outputfolder, csvfile, desiredtz, minmisratio = 1/3, shortwindow = 1, longwindow = 30)
-  D24HR = out$D24HR
-  Dshort = out$Dshort
-  Dlong = out$Dlong
-  Dsurvey = out$Dsurvey
-  save(D24HR, Dshort, Dlong, Dsurvey, file = aggregatefile)
-  # } else {
-  #   load(file = aggregatefile)
-  # }
+  if (!file.exists(aggregatefile)) {
+    out = agg.sleepsight(outputfolder, csvfile, desiredtz, minmisratio = 1/3, shortwindow = 1, longwindow = 30)
+    D24HR = out$D24HR
+    Dshort = out$Dshort
+    Dlong = out$Dlong
+    Dsurvey = out$Dsurvey
+    save(D24HR, Dshort, Dlong, Dsurvey, file = aggregatefile)
+  } else {
+    load(file = aggregatefile)
+  }
   
   write.csv(Dshort, file = paste0(outputfolder,"/Aggregated_per_shortwindow.csv"),row.names = FALSE)
   write.csv(Dlong, file = paste0(outputfolder,"/Aggregated_per_longwindow.csv"),row.names = FALSE)
