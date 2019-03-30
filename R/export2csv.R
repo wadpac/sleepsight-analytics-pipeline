@@ -52,10 +52,10 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       ScreenOn = data.frame(time = ScreenOnTimes,screenon = TRUE)
       df = addToDF(df,ScreenOn)
     }
-    if ("MovementPSGTimes" %in% ls()) {
-      MovementPSGTimes = aggregatePerMinute(MovementPSGTimes, desiredtz) #from 1 to 60 seconds
-      PSGmove = data.frame(time = MovementPSGTimes,PSGmove = TRUE)
-      df = addToDF(df,PSGmove)
+    if ("MovementGPSTimes" %in% ls()) {
+      MovementGPSTimes = aggregatePerMinute(MovementGPSTimes, desiredtz) #from 1 to 60 seconds
+      GPSmove = data.frame(time = MovementGPSTimes,GPSmove = TRUE)
+      df = addToDF(df,GPSmove)
     }
     if ("AppActiveTimes" %in% ls()) {
       AppActiveTimes = aggregatePerMinute(AppActiveTimes, desiredtz) # from 5 to 60 seconds
