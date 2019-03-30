@@ -108,23 +108,25 @@ getWithingsActivity = function(filefolder, desiredtz, directdownload = TRUE) {
       devint =devint[is.na(devint$steps)==FALSE,]
       devint$Date = as.Date(devint$Created.Date.POSIX)
       # timestamps when person was active
-      # devint$Created.Date.POSIX
       withings_personactive = data.frame(timestamp = as.character(devint$Created.Date.POSIX),
                                          movement=rep(TRUE,nrow(devint)),
                                          date= devint$Date, # to facilitate calculating steps per day (see commented code above)
                                          steps=devint$steps)
-      
     }
   }
   NRWP = nrow(withings_personactive)
   NRWE = nrow(withings_enterbodyinfo)  
-  if (NRWP > 0 & NRWE > 0) {
-    withingsActivity = base::merge(withings_enterbodyinfo,withings_personactive,by ="timestamp",all=TRUE)
-  } else if (NRWP > 0 & NRWE == 0){
-    withingsActivity = withings_personactive
-  } else if (NRWP == 0 & NRWE > 0){
-    withingsActivity = withings_enterbodyinfo
-  } else if (NRWP == 0 & NRWE == 0){
+  if (length(NRWP) > 0) {
+    if (NRWP > 0 & NRWE > 0) {
+      withingsActivity = base::merge(withings_enterbodyinfo,withings_personactive,by ="timestamp",all=TRUE)
+    } else if (NRWP > 0 & NRWE == 0){
+      withingsActivity = withings_personactive
+    } else if (NRWP == 0 & NRWE > 0){
+      withingsActivity = withings_enterbodyinfo
+    } else if (NRWP == 0 & NRWE == 0){
+      withingsActivity = c()
+    }
+  } else {
     withingsActivity = c()
   }
   return(withingsActivity)
