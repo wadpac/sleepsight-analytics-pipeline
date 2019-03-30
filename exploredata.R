@@ -1,13 +1,13 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
-graphics.off()
+# graphics.off()
 setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
 roxygen2::roxygenise()
 library(Sleepsight)
 library(data.table)
 #==============================================================
 # input variables
-overwrite = FALSE # whether to overwrite previously generated output with this R code.
+overwrite = FALSE# whether to overwrite previously generated output with this R code.
 do.plot = FALSE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
@@ -16,7 +16,6 @@ studyfolder = "/media/vincent/sleepsight"
 #==============================================================
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 
-# foldersInStudyFolder = "/media/vincent/sleepsight/pdk-export_2019-03-24_352"#"/media/vincent/sleepsight/SS08"
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
@@ -37,7 +36,7 @@ for (personfolder in foldersInStudyFolder) {
   cat("\n* Aggregate data to 5 minute and day level")
   aggregatefile = paste0(outputfolder,"/aggregated.RData")
   if (!file.exists(aggregatefile)) {
-    out = summarise(outputfolder, csvfile, desiredtz)
+    out = summarise(outputfolder, csvfile, desiredtz, minmisratio = 1/2)
     D24HR = out$D24HR
     D5min = out$D5min
     Dsurvey = out$Dsurvey
@@ -50,9 +49,7 @@ for (personfolder in foldersInStudyFolder) {
   write.csv(D24HR, file = paste0(outputfolder,"/Aggregated_per_24hour.csv"),row.names = FALSE)
   write.csv(Dsurvey, file = paste0(outputfolder,"/Simplified_Survey.csv"),row.names = FALSE)
   
-  # TO DO: remove dependency on setwd within functions
   # TO DO: expand documentation + rethink names of "aggregated.RData" and function "summarise"
-  # TO DO: make data cleaning parameters in summarise() modifiable
   # TO DO: Investigate issues with failed ID identification
   # TO DO: Move plotting code to separate function
   # LATER: Add double plot
@@ -68,10 +65,13 @@ for (personfolder in foldersInStudyFolder) {
   D5min$status2[which(D5min$status2 == "1")] = "active"
   D5min$status2[which(D5min$status2 == "0")] = "inactive"
   D5min$status2[which(D5min$status2 == "-1")] = "sleep"
+  D5min$status2[which(D5min$status2 == "-2")] = "sustained inactive"
   D5min$status2[which(D5min$status2 == "4")] = "missing"
   D5min$status = as.factor(D5min$status2)
   D5min$month = paste0(format(D5min$time.POSIX,"%m"),"-",format(D5min$time.POSIX,"%Y"))
   D5min$day = format(D5min$time.POSIX,"%d")
+  # D5min$weekday = weekdays(D5min$time.POSIX)
+  
   months = unique(D5min$month)
   myplots = list() 
   if (months[1] != "NULL-NULL") {
@@ -80,7 +80,7 @@ for (personfolder in foldersInStudyFolder) {
     for (mi in 1:12) {
       data2plot = D5min[which(D5min$month == months[mi]),]
       myplots[[mi]] = ggplot(data2plot, aes(day, hour_in_day, colour= status)) + geom_tile(aes(fill=status)) +
-        theme(axis.text.x = element_text(angle = 45)) + ggtitle(months[mi]) + ylab("time") + theme_bw()
+        theme(axis.text.x = element_text(angle = 45)) + ggtitle(months[mi]) + ylab("time in day") + theme_bw()
     }
     grid.arrange(myplots[[1]], myplots[[2]],myplots[[3]],myplots[[4]],myplots[[5]],myplots[[6]],
                  myplots[[7]], myplots[[8]],myplots[[9]],myplots[[10]],myplots[[11]],myplots[[12]], nrow = 6)
