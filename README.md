@@ -60,5 +60,5 @@ Extensions _dd and _pdk used in combination with Whithings wearable refers to di
 
 ## Using the code
 
-See [exploredata](./explorate.R) for an example of how to use the key functions in the package.
+See [exploredata](exploredata.R) for an example of how to use the key functions in the package.
 
