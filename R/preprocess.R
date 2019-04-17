@@ -11,8 +11,14 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE) {
   outputfolder = ID = c()
   # get source id:
   if (length(txt_files_in_folder) > 0) { # Sleep Survey
-    sleepsurveyFile = grep("sleep-survey",x = txt_files_in_folder)
-    appEventFile = grep("pdk-app-event",x = txt_files_in_folder)
+    sleepsurveyFile1 = grep("sleep",x = txt_files_in_folder)
+    sleepsurveyFile2 = grep("survey",x = txt_files_in_folder)
+    sleepsurveyFile = sleepsurveyFile1[which(sleepsurveyFile1 %in% sleepsurveyFile2 == TRUE)]
+    appEventFile1 = grep("pdk",x = txt_files_in_folder)
+    appEventFile2 = grep("app",x = txt_files_in_folder)
+    appEventFile3 = grep("event",x = txt_files_in_folder)
+    appEventFile4 = appEventFile1[which(appEventFile1 %in% appEventFile2 == TRUE)]
+    appEventFile = appEventFile4[which(appEventFile4 %in% appEventFile3 == TRUE)]
     tmp3 = unique(c(appEventFile,sleepsurveyFile))
     
     if (length(tmp3) > 0) {
