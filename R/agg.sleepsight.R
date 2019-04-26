@@ -36,8 +36,8 @@ agg.sleepsight = function(outputfolder, csvfile, desiredtz, minmisratio=1/3, sho
       D$status = 5 # no data is default
       #----------------------------------------------------
       # SLEEP
-      sleep = which(D$withingsleep == 1 & is.na(D$GPSmove) == TRUE & is.na(D$batinteract) == TRUE &
-                      is.na(D$withingsactive) == TRUE & is.na(D$phoneacc) == TRUE & is.na(D$AppAct) == TRUE)
+      sleep = which(D$withingsleep == 1 | (is.na(D$GPSmove) == TRUE & is.na(D$batinteract) == TRUE &
+                      is.na(D$withingsactive) == TRUE & is.na(D$phoneacc) == TRUE)) #& is.na(D$AppAct) == TRUE)
       D$status[sleep] = -1 # withings sleep AND no phone movement AND no phone app activity AND no withings activity
       #----------------------------------------------------
       # INACTIVE
