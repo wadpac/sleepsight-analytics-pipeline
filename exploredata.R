@@ -7,7 +7,8 @@ library(Sleepsight)
 library(data.table)
 #==============================================================
 # input variables
-overwrite = FALSE# whether to overwrite previously generated output with this R code.
+overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
+overwrite.aggregate = TRUE
 do.plot = FALSE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
@@ -15,13 +16,16 @@ studyfolder = "/media/vincent/sleepsight"
 
 #==============================================================
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
+# foldersInStudyFolder = "/media/vincent/sleepsight/SS03" 
+
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
   cat(paste0("\n",personfolder))
   
   cat("\n* Preprocess")
-  outputfolder = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite)
+  outputfolder = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite.preprocess)
+  
   cat("\n* Export to csv")
   tmpID = unlist(strsplit(outputfolder,"/"))
   personID = unlist(strsplit(tmpID[length(tmpID)],"_"))[2]
@@ -34,11 +38,11 @@ for (personfolder in foldersInStudyFolder) {
   
   cat("\n* Aggregate data per: day, 30 minutes, and 1 minute")
   aggregatefile = paste0(outputfolder,"/agg.sleepsight.RData")
-  if (!file.exists(aggregatefile)) {
+  if (!file.exists(aggregatefile) | overwrite.aggregate == TRUE) {
     out = agg.sleepsight(outputfolder, csvfile, desiredtz, minmisratio = 1/3, shortwindow = 1, longwindow = 30)
     D24HR = out$D24HR
-    Dshort = out$Dshort
-    Dlong = out$Dlong
+    Dshort = out$Dshort # 1 minute
+    Dlong = out$Dlong # 30 minutes
     Dsurvey = out$Dsurvey
     save(D24HR, Dshort, Dlong, Dsurvey, file = aggregatefile)
   } else {
@@ -77,7 +81,7 @@ for (personfolder in foldersInStudyFolder) {
       plot(D24HR$sleepdur,type="p",main="sleep (hours)",xlab=XL, ylab="",ylim=YLIM)
       plot(D24HR$susindur,type="p",main= "sustained inactivity (hours)",xlab=XL, ylab="",ylim=YLIM)
       plot(D24HR$inactivedur,type="p",main= "inactive (hours)",xlab=XL, ylab="",ylim=YLIM)
-     
+      
       plot(D24HR$activedur,type="p",main = "active (hours)",xlab=XL, ylab="",ylim=YLIM)
       plot(D24HR$inconclusive_dur,type="p",main = "inconclusive (hours)",xlab=XL, ylab="",ylim=YLIM)
       plot(D24HR$missing_dur,type="p",main= "missing data (hours)",xlab=XL, ylab="",ylim=YLIM)
