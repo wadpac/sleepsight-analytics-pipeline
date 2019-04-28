@@ -4,13 +4,15 @@
 \alias{agg.sleepsight}
 \title{agg.sleepsight}
 \usage{
-agg.sleepsight(outputfolder, csvfile, desiredtz, minmisratio = 1/3,
-  shortwindow = 1, longwindow = 30)
+agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
+  minmisratio = 1/3, shortwindow = 1, longwindow = 30)
 }
 \arguments{
-\item{outputfolder}{RData datafile where the output of preprocess is stored.}
+\item{aggregatefile}{RData file where the output of aggregation will be stored.}
 
-\item{csvfile}{file name where data overview needs to be stored}
+\item{csvfile}{csv file where data overview was stored}
+
+\item{surveyfile}{RData file where the preprocessed survey data is stored}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
 

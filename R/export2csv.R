@@ -7,7 +7,7 @@
 #' @export
 #' @importFrom utils write.csv
 export2csv = function(outputfolder, csvfile, desiredtz) {
-  if (!file.exists(paste0(outputfolder,"/",csvfile))) {
+  if (!file.exists(csvfile)) {
     
     # to avoid warning "no visible binding for global variable " by R CMD check
     # when it sees that we are using undeclared objects, which actually are loaded
@@ -168,6 +168,6 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
     df$min = as.POSIXlt(df$time)$min
     df$min_inday = df$hour * 60 + df$min
     clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
-    write.csv(df,file=paste0(outputfolder,"/",csvfile),row.names = FALSE)
+    write.csv(df,file=csvfile,row.names = FALSE)
   }
 }

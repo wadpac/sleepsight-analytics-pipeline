@@ -14,23 +14,29 @@ library(devtools)
 install_github("wadpac/sleepsight-analytics-pipeline")
 ```
 
-## Expected data input:
+## Expected data input and folder structure:
 
 - The data is assumed to be stored as follows:
   - studyfolder
-    - folder with data participant 1
-      - multiple folders with data from the various channels
-    - folder with data participant 2
-      - multiple folders with data from the various channels
+    - folder with raw data participant 1 (note: calling it SS01 might be practical, but is not necessary)
+      - pdk_pdk-app-event.txt
+      - Phone_sensors (folder)
+        - pdk-device-battery (folder)
+        - pdk-foreground-application (folder)
+        - ... and all other pdk output folders with txt files from the various channels
+      - Sleep_diary (folder)
+        - pdk_sleep-survey.txt
+      - Withings-data (folder)
+        - txt-files for pdk download (optionally stored subfolders)
+        - csv-files for direct download (optionally stored subfolders)
+    - folder with raw data participant 2
+      - same structure as participant 1
 - For the moment, the data channels can include:
   - Passive data kit (pdk) data from phone.
   - Folder with data from Withings wearable, identified as any string with 'Withings-' in it.
     Inside this folder there will be subfolders for:
     - Direct downloads from Withings.
     - pdk data for Withings.
-- Not facilitated yet, but scheduled for implementation:
-  - pdk survey data
-  
 
 ## Expected output:
 

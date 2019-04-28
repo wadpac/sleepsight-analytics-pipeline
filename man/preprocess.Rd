@@ -4,7 +4,7 @@
 \alias{preprocess}
 \title{preprocess}
 \usage{
-preprocess(personfolder, desiredtz, overwrite = FALSE)
+preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder)
 }
 \arguments{
 \item{personfolder}{folder in which we expect all the pdk and Withings output folder.}

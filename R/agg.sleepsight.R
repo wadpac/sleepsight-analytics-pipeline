@@ -1,18 +1,21 @@
 #' agg.sleepsight
 #'
-#' @param outputfolder RData datafile where the output of preprocess is stored.
-#' @param csvfile file name where data overview needs to be stored
+#' @param aggregatefile RData file where the output of aggregation will be stored.
+#' @param csvfile csv file where data overview was stored
+#' @param surveyfile RData file where the preprocessed survey data is stored
 #' @param desiredtz timezone (character) in Europe/London format
 #' @param minmisratio minimum missing ratio per day, day will be ignored if more data is missing
 #' @param shortwindow short window length in minutes to aggregate to
 #' @param longwindow long window length in minutes to aggregate to
 #' @return List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey.
 #' @export
-agg.sleepsight = function(outputfolder, csvfile, desiredtz, minmisratio=1/3, shortwindow = 1, longwindow = 30) {
+agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisratio=1/3, shortwindow = 1, longwindow = 30) {
   D24HR = Dshort = Dlong = Dsurvey = c()
-  if (file.exists(paste0(outputfolder,"/",csvfile))) {
+  if (!file.exists(csvfile)) {
+    cat("\nWarning: csvfile not found as input for aggregation")
+  } else {
     # Load data
-    D = data.table::fread(paste0(outputfolder,"/",csvfile))
+    D = data.table::fread(csvfile)
     D = as.data.frame(D)
     # Potentially Withings data is available from both Direct download and from PDK.
     # Use direct download if available, if not then use pdk, if neither is available then do not process 
@@ -249,8 +252,7 @@ agg.sleepsight = function(outputfolder, csvfile, desiredtz, minmisratio=1/3, sho
         D24HR = merge(D24HR,tmp,by="date")
         #----------------------------------------------
         # Also load survey data
-        surveyfilename = paste0(outputfolder,"/SleepSurvey.RData")
-        if (file.exists(surveyfilename) == TRUE) {
+        if (file.exists(surveyfile) == TRUE) {
           load(surveyfilename)
           Dsurvey = SleepSurvey[,c("positiveFeelings","negativeFeelings","Sleep.Quality.Value","surveytime")]
           Dsurvey$date = as.Date(as.POSIXlt(Dsurvey$surveytime,tz=desiredtz))
