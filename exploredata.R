@@ -7,7 +7,7 @@ library(data.table)
 #==============================================================
 # input variables
 overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
-overwrite.aggregate = TRUE
+overwrite.aggregate = FALSE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
@@ -81,16 +81,31 @@ for (personfolder in foldersInStudyFolder) {
     myplots = list() 
     if (months[1] != "NULL-NULL") {
       # heatmap
-      png(filename = heatmapsfile ,width = 12,height = 10,units = "in",res = 400)
+      Nmonths = length(unique(Dshort$month))
+      nCol = 2
+      nRow = ceiling(Nmonths / 2)
+      coldic <- c("active" = "#D55E00", 
+                  "inactive" = "#009E73", 
+                   "sleep" = "#56B4E9", 
+                   "sustained inactive" = "#F0E442", 
+                   "inconsluvie" = "#CC79A7", 
+                   "no data" = "#999999")
+      png(filename = heatmapsfile ,width = nCol*7, height = nRow * 2.5,units = "in",res = 400)
       par(mfrow=c(6,2))
-      for (mi in 1:12) {
+      for (mi in 1:Nmonths) {
         data2plot = Dshort[which(Dshort$month == months[mi]),]
-        myplots[[mi]] = ggplot(data2plot, aes(day, hour_in_day, colour= status)) + geom_tile(aes(fill=status)) +
-          theme(axis.text.x = element_text(angle = 45)) + ggtitle(months[mi]) + ylab("time in day") + theme_bw()
+        myplots[[mi]] = ggplot(data2plot) +  #, colour = status
+                        geom_tile(aes(day, hour_in_day, fill=status, color=status)) +
+                        theme(axis.text.x = element_text(angle = 45)) +
+                        ggtitle(months[mi]) +
+                        ylab("time in day") +
+                        theme_bw() +
+                        scale_colour_manual(values = coldic) +
+                        scale_fill_manual(values = coldic)
       }
-      grid.arrange(myplots[[1]], myplots[[2]],myplots[[3]],myplots[[4]],myplots[[5]],myplots[[6]],
-                   myplots[[7]], myplots[[8]],myplots[[9]],myplots[[10]],myplots[[11]],myplots[[12]], nrow = 6)
+      do.call("grid.arrange", c(myplots, ncol=nCol, nrow = nRow))
       dev.off()
+      
       # time series
       png(filename = timeseriesfile,width = 12,height = 10,units = "in",res = 400)
       par(mfrow=c(5,2),bty="l",pch=20)
