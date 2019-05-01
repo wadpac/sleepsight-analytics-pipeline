@@ -26,7 +26,7 @@ for (personfolder in foldersInStudyFolder) {
   
   cat("\n* Preprocess")
   outputfolderID = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite.preprocess,
-                            outputfolder=outputfolder)
+                              outputfolder=outputfolder)
   cat("\n* Export to csv")
   personID = unlist(strsplit(outputfolderID,"/preproces/SS"))[2]
   csvfolder = paste0(outputfolder,"/preproces2csv")
@@ -78,16 +78,15 @@ for (personfolder in foldersInStudyFolder) {
   library(gridExtra)
   if (length(Dshort) > 0) {
     months = unique(Dshort$month)
-    myplots = list() 
     if (months[1] != "NULL-NULL") {
       # heatmap
       # color coding:
       coldic <- c("active" = "#D55E00",
                   "inactive" = "#F0E442",
-                   "sleep" = "#56B4E9",
-                   "sustained inactive" = "#009E73",
-                   "inconsluvie" = "#CC79A7",
-                   "no data" = "#999999")
+                  "sleep" = "#56B4E9",
+                  "sustained inactive" = "#009E73",
+                  "inconsluvie" = "#CC79A7",
+                  "no data" = "#999999")
       # Single heatmap per person
       data2plot = Dshort
       # simplify classes
@@ -102,20 +101,24 @@ for (personfolder in foldersInStudyFolder) {
       data2plot = rbind(data2plot, doubleplot)
       data2plot = data2plot[order(data2plot$hour_in_day,data2plot$date),]
       data2plot$date = as.character(data2plot$date)
+      cat("\n")
+      print(heatmapsfile)
+      print(dim(data2plot))
       png(filename = heatmapsfile ,width = 15, height = 7,units = "in",res = 400)
-              ggplot(data2plot) +  #, colour = status
-                        geom_tile(aes(date, hour_in_day, fill=status, color=status)) +
-                        # ggtitle(months[mi]) +
-                        xlab("") +
-                        ylab("Hour in day") +
-                        theme_bw() +
-                        scale_colour_manual(values = coldic) +
-                        scale_fill_manual(values = coldic) +
-                        scale_x_discrete(breaks = ddd) + #, minor_breaks = seq(0, 4.8, 0.1)
-                        theme(axis.text.x = element_text(angle = 45))
+      myplot = ggplot(data2plot) +
+        geom_tile(aes(date, hour_in_day, fill=status, color=status)) +
+        xlab("") +
+        ylab("Hour in day") +
+        theme_bw() +
+        scale_colour_manual(values = coldic) +
+        scale_fill_manual(values = coldic) +
+        scale_x_discrete(breaks = ddd) +
+        theme(axis.text.x = element_text(angle = 45))
+      print(myplot)
       dev.off()
       
       # Alternative heatmap, but now per month and presented as a grid:
+      # myplots = list() 
       # Nmonths = length(unique(Dshort$month))
       # nCol = 2
       # nRow = ceiling(Nmonths / 2)
