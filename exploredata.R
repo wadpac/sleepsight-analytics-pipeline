@@ -81,30 +81,59 @@ for (personfolder in foldersInStudyFolder) {
     myplots = list() 
     if (months[1] != "NULL-NULL") {
       # heatmap
-      Nmonths = length(unique(Dshort$month))
-      nCol = 2
-      nRow = ceiling(Nmonths / 2)
-      coldic <- c("active" = "#D55E00", 
-                  "inactive" = "#009E73", 
-                   "sleep" = "#56B4E9", 
-                   "sustained inactive" = "#F0E442", 
-                   "inconsluvie" = "#CC79A7", 
+      # color coding:
+      coldic <- c("active" = "#D55E00",
+                  "inactive" = "#F0E442",
+                   "sleep" = "#56B4E9",
+                   "sustained inactive" = "#009E73",
+                   "inconsluvie" = "#CC79A7",
                    "no data" = "#999999")
-      png(filename = heatmapsfile ,width = nCol*7, height = nRow * 2.5,units = "in",res = 400)
-      par(mfrow=c(6,2))
-      for (mi in 1:Nmonths) {
-        data2plot = Dshort[which(Dshort$month == months[mi]),]
-        myplots[[mi]] = ggplot(data2plot) +  #, colour = status
-                        geom_tile(aes(day, hour_in_day, fill=status, color=status)) +
-                        theme(axis.text.x = element_text(angle = 45)) +
-                        ggtitle(months[mi]) +
-                        ylab("time in day") +
+      # Single heatmap per person
+      data2plot = Dshort
+      # simplify classes
+      data2plot$status[which(data2plot$status %in% c("sustained inactive","sleep") == TRUE)] = "inactive"
+      
+      ddd = unique(data2plot$date)
+      ddd = ddd[seq(1,length(ddd),15)]
+      data2plot$date = as.Date(data2plot$date)
+      doubleplot = data2plot
+      doubleplot$hour_in_day = doubleplot$hour_in_day + 24
+      doubleplot$date = doubleplot$date - 1
+      data2plot = rbind(data2plot, doubleplot)
+      data2plot = data2plot[order(data2plot$hour_in_day,data2plot$date),]
+      data2plot$date = as.character(data2plot$date)
+      png(filename = heatmapsfile ,width = 15, height = 7,units = "in",res = 400)
+              ggplot(data2plot) +  #, colour = status
+                        geom_tile(aes(date, hour_in_day, fill=status, color=status)) +
+                        # ggtitle(months[mi]) +
+                        xlab("") +
+                        ylab("Hour in day") +
                         theme_bw() +
                         scale_colour_manual(values = coldic) +
-                        scale_fill_manual(values = coldic)
-      }
-      do.call("grid.arrange", c(myplots, ncol=nCol, nrow = nRow))
+                        scale_fill_manual(values = coldic) +
+                        scale_x_discrete(breaks = ddd) + #, minor_breaks = seq(0, 4.8, 0.1)
+                        theme(axis.text.x = element_text(angle = 45))
       dev.off()
+      
+      # Alternative heatmap, but now per month and presented as a grid:
+      # Nmonths = length(unique(Dshort$month))
+      # nCol = 2
+      # nRow = ceiling(Nmonths / 2)
+      # png(filename = heatmapsfile ,width = nCol*7, height = nRow * 2.5,units = "in",res = 400)
+      # par(mfrow=c(6,2))
+      # for (mi in 1:Nmonths) {
+      #   data2plot = Dshort[which(Dshort$month == months[mi]),]
+      #   myplots[[mi]] = ggplot(data2plot) +  #, colour = status
+      #     geom_tile(aes(day, hour_in_day, fill=status, color=status)) +
+      #     theme(axis.text.x = element_text(angle = 45)) +
+      #     ggtitle(months[mi]) +
+      #     ylab("time in day") +
+      #     theme_bw() +
+      #     scale_colour_manual(values = coldic) +
+      #     scale_fill_manual(values = coldic)
+      # }
+      # do.call("grid.arrange", c(myplots, ncol=nCol, nrow = nRow))
+      # dev.off()
       
       # time series
       png(filename = timeseriesfile,width = 12,height = 10,units = "in",res = 400)
