@@ -101,9 +101,6 @@ for (personfolder in foldersInStudyFolder) {
       data2plot = rbind(data2plot, doubleplot)
       data2plot = data2plot[order(data2plot$hour_in_day,data2plot$date),]
       data2plot$date = as.character(data2plot$date)
-      cat("\n")
-      print(heatmapsfile)
-      print(dim(data2plot))
       png(filename = heatmapsfile ,width = 15, height = 7,units = "in",res = 400)
       myplot = ggplot(data2plot) +
         geom_tile(aes(date, hour_in_day, fill=status, color=status)) +
