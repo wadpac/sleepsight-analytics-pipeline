@@ -10,8 +10,8 @@ overwrite.preprocess = TRUE# whether to overwrite previously generated preproces
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 desiredtz = "Europe/London"
-studyfolder = "/media/vincent/sleepsight_test"
-outputfolder = "/media/vincent/sleepsight_test/results"
+studyfolder = "/media/vincent/sleepsight"
+outputfolder = "/media/vincent/sleepsight/results"
 # Note: see README for expected folder structure!
 
 #==============================================================
