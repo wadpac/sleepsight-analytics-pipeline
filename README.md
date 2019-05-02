@@ -6,7 +6,7 @@ Set of function to process data from the sleepsight study (King's College London
 The following code will install Sleepsight from GitHub and other packages you will need.
 
 ```
-list.of.packages <- c("devtools", "data.table","roxygen2")
+list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 library(data.table)

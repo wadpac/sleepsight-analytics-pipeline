@@ -4,7 +4,10 @@
 #' @param csvfile csvfile with the aggregated data
 #' @return No output, a png file is stored in the outputfolder
 #' @export
-testplot = function(histfiler, csvfile) {
+#' @importFrom grDevices dev.off png
+#' @importFrom graphics axis hist par title
+#' @importFrom utils read.csv
+testplot = function(histfile, csvfile) {
 
   plothist = function(namevar="",CDF,x="",plottitle="", xpos=Xposi, xlabe=Xlabe) {
     if (namevar %in% CDF)  {

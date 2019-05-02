@@ -1,17 +1,17 @@
 Package: Sleepsight
 Type: Package
-Title: Sleepsight wearable sensor processing pipeline
-Version: 0.0-2
-Date: 2019-03-08
+Title: Wearable Sensor and Survey Processing Pipeline
+Version: 0.0-3
+Date: 2019-05-02
 Authors@R: c(person("Vincent T","van Hees",role=c("aut","cre"),
                   email="vincentvanhees@gmail.com"))
 Maintainer: Vincent T van Hees <vincentvanhees@gmail.com>
 Description: For processesing mobile and wearable sensor data generated in the sleepsight study.
 URL: https://github.com/wadpac/sleepsight-analytics-pipeline
 License: Apache License version 2.0 | file LICENSE
-Suggests: bit64
+Suggests: bit64, pracma, zoo
 Imports: data.table
-Depends: stats, utils, R (>= 3.1.2)
+Depends: stats, utils, R (>= 3.1.2), grDevices, graphics
 NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1

@@ -4,12 +4,12 @@
 \alias{testplot}
 \title{testplot}
 \usage{
-testplot(histfiler, csvfile)
+testplot(histfile, csvfile)
 }
 \arguments{
-\item{csvfile}{csvfile with the aggregated data}
-
 \item{histfile}{file where to store the plot}
+
+\item{csvfile}{csvfile with the aggregated data}
 }
 \value{
 No output, a png file is stored in the outputfolder
