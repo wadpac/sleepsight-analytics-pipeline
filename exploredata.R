@@ -6,12 +6,12 @@ library(Sleepsight)
 library(data.table)
 #==============================================================
 # input variables
-overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
-overwrite.aggregate = FALSE
+overwrite.preprocess = TRUE# whether to overwrite previously generated preprocessing output with this R code.
+overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 desiredtz = "Europe/London"
-studyfolder = "/media/vincent/sleepsight"
-outputfolder = "/media/vincent/sleepsight/results"
+studyfolder = "/media/vincent/sleepsight_test"
+outputfolder = "/media/vincent/sleepsight_test/results"
 # Note: see README for expected folder structure!
 
 #==============================================================
@@ -63,9 +63,10 @@ for (personfolder in foldersInStudyFolder) {
   write.csv(D24HR, file = paste0(aggfolder,"/Aggregated_per_day_",personID,".csv"),row.names = FALSE)
   write.csv(Dsurvey, file = paste0(aggfolder,"/Simplified_Survey_",personID,".csv"),row.names = FALSE)
   
+  #=============================================================================================
   # TO DO: Move visualisation code below to separate function when it has matured
   cat("\n* Overview visualisations")
-  
+  # Create specific folders for visualisations
   heatmapsfolder = paste0(outputfolder,"/heatmaps")
   if (!dir.exists(heatmapsfolder)) dir.create(heatmapsfolder)
   heatmapsfile = paste0(heatmapsfolder,"/heatmap_",personID,".png")
@@ -89,11 +90,10 @@ for (personfolder in foldersInStudyFolder) {
                   "no data" = "#999999")
       # Single heatmap per person
       data2plot = Dshort
-      # simplify classes
+      # simplify classes to only active and inactive
       data2plot$status[which(data2plot$status %in% c("sustained inactive","sleep") == TRUE)] = "inactive"
-      
-      ddd = unique(data2plot$date)
-      ddd = ddd[seq(1,length(ddd),15)]
+      dates_on_x_axis = unique(data2plot$date)
+      dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),15)]
       data2plot$date = as.Date(data2plot$date)
       doubleplot = data2plot
       doubleplot$hour_in_day = doubleplot$hour_in_day + 24
@@ -109,7 +109,7 @@ for (personfolder in foldersInStudyFolder) {
         theme_bw() +
         scale_colour_manual(values = coldic) +
         scale_fill_manual(values = coldic) +
-        scale_x_discrete(breaks = ddd) +
+        scale_x_discrete(breaks = dates_on_x_axis) +
         theme(axis.text.x = element_text(angle = 45))
       print(myplot)
       dev.off()

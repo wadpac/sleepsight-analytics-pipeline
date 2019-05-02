@@ -12,6 +12,8 @@ preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder)
 \item{desiredtz}{timezone (character) in Europe/London format}
 
 \item{overwrite}{boolean if TRUE then it will reload all the data (default FALSE).}
+
+\item{outputfolder}{the name of the RData file where all extracted data is stored.}
 }
 \value{
 outputfolder the name of the RData file where all extracted data is stored.

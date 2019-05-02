@@ -3,6 +3,7 @@
 #' @param personfolder folder in which we expect all the pdk and Withings output folder.
 #' @param desiredtz timezone (character) in Europe/London format
 #' @param overwrite boolean if TRUE then it will reload all the data (default FALSE).
+#' @param outputfolder the name of the RData file where all extracted data is stored.
 #' @return outputfolder the name of the RData file where all extracted data is stored.
 #' @export
 preprocess = function(personfolder,desiredtz,overwrite=FALSE,outputfolder) {
@@ -44,6 +45,8 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE,outputfolder) {
     cat(paste0("\n",personfolder))
   } else {
     cat(paste0("\nPerson ID = ", ID))
+    if (!dir.exists(outputfolder)) dir.create(outputfolder)
+    if (!dir.exists(paste0(outputfolder,"/preproces"))) dir.create(paste0(outputfolder,"/preproces"))
     outputfolder = paste0(outputfolder,"/preproces/SS",ID)
     if (!dir.exists(outputfolder)) dir.create(outputfolder)
     #============================
