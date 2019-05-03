@@ -6,8 +6,8 @@ library(Sleepsight)
 library(data.table)
 #==============================================================
 # input variables
-overwrite.preprocess = TRUE# whether to overwrite previously generated preprocessing output with this R code.
-overwrite.aggregate = TRUE
+overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
+overwrite.aggregate = FALSE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
@@ -134,7 +134,7 @@ for (personfolder in foldersInStudyFolder) {
       # }
       # do.call("grid.arrange", c(myplots, ncol=nCol, nrow = nRow))
       # dev.off()
-      
+      cat("\n* Time series visualisation")
       # time series
       png(filename = timeseriesfile,width = 12,height = 10,units = "in",res = 400)
       par(mfrow=c(5,2),bty="l",pch=20)
