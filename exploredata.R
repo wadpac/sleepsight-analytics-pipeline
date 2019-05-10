@@ -1,19 +1,25 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
+options(warn=0)
 setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
+list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
 roxygen2::roxygenise()
 library(Sleepsight)
 library(data.table)
+
 #==============================================================
 # input variables
 overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
-overwrite.aggregate = FALSE
+overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
+simplify.behavioralclasses = FALSE
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 outputfolder = "/media/vincent/sleepsight/results"
 # Note: see README for expected folder structure!
-
+options(warn=2)
 #==============================================================
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 removei = grep(x = foldersInStudyFolder,pattern = "results")
@@ -46,7 +52,7 @@ for (personfolder in foldersInStudyFolder) {
   if (!dir.exists(aggfolder)) dir.create(aggfolder)
   aggregatefile = paste0(aggfolder,"/agg.sleepsight_",personID,".RData")
   
-  surveyfile = paste0(outputfolderID,"/SleepSurvey")
+  surveyfile = paste0(outputfolderID,"/SleepSurvey.RData")
   
   if (!file.exists(aggregatefile) | overwrite.aggregate == TRUE) {
     out = agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz, minmisratio = 1/3, shortwindow = 1, longwindow = 30)
@@ -91,7 +97,9 @@ for (personfolder in foldersInStudyFolder) {
       # Single heatmap per person
       data2plot = Dshort
       # simplify classes to only active and inactive
-      data2plot$status[which(data2plot$status %in% c("sustained inactive","sleep") == TRUE)] = "inactive"
+      if (simplify.behavioralclasses == TRUE) {
+        data2plot$status[which(data2plot$status %in% c("sustained inactive","sleep") == TRUE)] = "inactive"
+      }
       dates_on_x_axis = unique(data2plot$date)
       dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),15)]
       data2plot$date = as.Date(data2plot$date)

@@ -6,7 +6,7 @@
 #' @param outputfolder the name of the RData file where all extracted data is stored.
 #' @return outputfolder the name of the RData file where all extracted data is stored.
 #' @export
-preprocess = function(personfolder,desiredtz,overwrite=FALSE,outputfolder) {
+preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
   
   channelfolders = c(list.dirs(paste0(personfolder,"/Phone_sensors"), recursive=FALSE),
                       list.dirs(paste0(personfolder,"/Sleep_diary"), recursive=FALSE))

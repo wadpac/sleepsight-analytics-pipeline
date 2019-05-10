@@ -39,8 +39,10 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       D$status = 5 # no data is default
       #----------------------------------------------------
       # SLEEP
-      sleep = which(D$withingsleep == 1 | (is.na(D$GPSmove) == TRUE & is.na(D$batinteract) == TRUE &
-                      is.na(D$withingsactive) == TRUE & is.na(D$phoneacc) == TRUE)) #& is.na(D$AppAct) == TRUE)
+      # old (before 10 May 2019):
+      # sleep = which(D$withingsleep == 1 | (is.na(D$GPSmove) == TRUE & is.na(D$batinteract) == TRUE &
+      #                 is.na(D$withingsactive) == TRUE & is.na(D$phoneacc) == TRUE)) #& is.na(D$AppAct) == TRUE)
+      sleep = which(D$withingsleep == 1) #& is.na(D$AppAct) == TRUE)
       D$status[sleep] = -1 # withings sleep AND no phone movement AND no phone app activity AND no withings activity
       #----------------------------------------------------
       # INACTIVE
@@ -103,10 +105,12 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       if (length(shortdays) > 0) { # exclude also days with less 
         daysexclude = unique(c(daysexclude,which(Dday$date %in% shortdays == TRUE)))
       }
-      if (length(daysexclude) > 0) {
-        Dminute = Dminute[-which(Dminute$date %in% Dday$date[daysexclude] == TRUE),]
-        Dday = Dday[-daysexclude,]
-      }
+      
+      # # Note: Day exclusion commented out for now
+      # if (length(daysexclude) > 0) {
+      #   Dminute = Dminute[-which(Dminute$date %in% Dday$date[daysexclude] == TRUE),]
+      #   Dday = Dday[-daysexclude,]
+      # }
 
       #========================================================
       # create new category sustained inactivity, if 95% or more of 90 minutes is inactive
