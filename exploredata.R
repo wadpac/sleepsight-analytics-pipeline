@@ -1,6 +1,6 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
-options(warn=0)
+# options(warn=0)
 setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
 list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -19,7 +19,7 @@ desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 outputfolder = "/media/vincent/sleepsight/results"
 # Note: see README for expected folder structure!
-options(warn=2)
+# options(warn=2)
 #==============================================================
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 removei = grep(x = foldersInStudyFolder,pattern = "results")
