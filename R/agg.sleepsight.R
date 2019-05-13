@@ -57,11 +57,11 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       #----------------------------------------------------
       # INCONCLUSIVE
       inconclusive = which(is.na(D$lighton) == TRUE & is.na(D$screenon) == TRUE &
-                        is.na(D$GPSmove) == TRUE & is.na(D$AppAct == TRUE) &
-                        is.na(D$batinteract == TRUE) & is.na(D$phoneacc) == TRUE &
-                        is.na(D$AppHalted) == TRUE & is.na(D$withingsactive) == TRUE & is.na(D$withingsleep) == TRUE)
+                             is.na(D$GPSmove) == TRUE & is.na(D$AppAct == TRUE) &
+                             is.na(D$batinteract == TRUE) & is.na(D$phoneacc) == TRUE &
+                             is.na(D$AppHalted) == TRUE & is.na(D$withingsactive) == TRUE & is.na(D$withingsleep) == TRUE)
       D$status[inconclusive] = 4 
-
+      
       #----------------------------------------------------
       # Create new dataframe with only status and timestamps
       tmpmin = D[,c("time","status")]
@@ -78,6 +78,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       if (length(missing_status) > 0) Dminute$status[missing_status] = 5
       Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
       Dminute$date = as.Date(Dminute$time)
+      
       #========================================================
       # Remove days with not enough data
       # To do this we have to aggregate per day
@@ -105,13 +106,11 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       if (length(shortdays) > 0) { # exclude also days with less 
         daysexclude = unique(c(daysexclude,which(Dday$date %in% shortdays == TRUE)))
       }
-      
       # # Note: Day exclusion commented out for now
       # if (length(daysexclude) > 0) {
       #   Dminute = Dminute[-which(Dminute$date %in% Dday$date[daysexclude] == TRUE),]
       #   Dday = Dday[-daysexclude,]
       # }
-
       #========================================================
       # create new category sustained inactivity, if 95% or more of 90 minutes is inactive
       D6 = zoo::rollapply(Dminute$status,FUN=function(x) length(which(x == 0)),width = 90)
@@ -226,8 +225,11 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         colnames(tmp) = c("date","L5hour")
         D24HR = merge(D24HR,tmp,by="date")
         tmp = aggregate(x = DshortB$rollmean5HR,by = list(date = DshortB$date),FUN = function(x) {
-          mv = min(x,na.rm = TRUE)
-          if (mv == Inf | mv == Inf) mv = NA
+          mv = NA
+          if (length(which(is.na(x) == FALSE)) > 0) {
+            mv = min(x,na.rm = TRUE)
+            if (mv == Inf | mv == Inf) mv = NA
+          }
           return(mv)
         })
         colnames(tmp) = c("date","L5value")
@@ -239,8 +241,11 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         colnames(tmp) = c("date","M10hour")
         D24HR = merge(D24HR,tmp,by="date")
         tmp = aggregate(x = DshortB$rollmean10HR,by = list(date = DshortB$date),FUN = function(x) {
-          mv = max(x,na.rm = TRUE)
-          if (mv == Inf | mv == Inf) mv = NA
+          mv = NA
+          if (length(which(is.na(x) == FALSE)) > 0) {
+            mv = max(x,na.rm = TRUE)
+            if (mv == Inf | mv == Inf) mv = NA
+          }
           return(mv)
         })
         colnames(tmp) = c("date","M10value")
@@ -265,6 +270,10 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         
       }
     }
+    Dshort = Dshort[!duplicated(Dshort),]
+    print(dim(Dshort))
+    Dlong = Dlong[!duplicated(Dlong),]
+    D24HR = D24HR[!duplicated(D24HR),]
     return(list(D24HR=D24HR,Dshort=Dshort,Dlong=Dlong,Dsurvey=Dsurvey))
   }
 }
