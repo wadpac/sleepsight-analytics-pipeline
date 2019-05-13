@@ -145,7 +145,6 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       if (length(bedtime_min12) > 0) SleepSurvey$bedtime[bedtime_min12] = SleepSurvey$bedtime[bedtime_min12] - (12*3600)
       if (length(bedtime_min24) > 0) SleepSurvey$bedtime[bedtime_min24] = SleepSurvey$bedtime[bedtime_min24] - (24*3600)
       if (length(risetime_plus24) > 0) SleepSurvey$risetime[risetime_plus24] = SleepSurvey$risetime[risetime_plus24] + (24*3600)
-    
       # Add time in bed (self-reported)
       SleepSurvey$bedtime_num = as.numeric(SleepSurvey$bedtime) # work with numeric time
       SleepSurvey$risetime_num = as.numeric(SleepSurvey$risetime) # work with numeric time
@@ -154,20 +153,24 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       InBedTimes = c()
       for (jj in 1:nrow(SleepSurvey)) {
         InBedTimes = c(InBedTimes, seq(SleepSurvey$bedtime_num[jj],SleepSurvey$risetime_num[jj],by=60))
+        # Note this is the place where double timestamps can originate, because some reported times in bed overlap
       }
       InBedTimes = as.POSIXlt(InBedTimes, origin="1970-1-1", tz=desiredtz)
       inbed = data.frame(time=InBedTimes, InBed=TRUE)
+      inbed = inbed[!duplicated(inbed),] # remove double entries
       df = addToDF(df,inbed)
       # add survey
       survey = SleepSurvey[,c("surveytime","positiveFeelings","negativeFeelings","Sleep.Quality.Value","Sleep.Duration")]
       colnames(survey)[which(colnames(survey) == "surveytime")] = "time"
       df = addToDF(df,survey)
     }
+    
     # add hour in the day to ease plotting
     df$hour = as.POSIXlt(df$time)$hour
     df$min = as.POSIXlt(df$time)$min
     df$min_inday = df$hour * 60 + df$min
     clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
+    df= df[!duplicated(df),] # remove double entries
     write.csv(df,file=csvfile,row.names = FALSE)
   }
 }
