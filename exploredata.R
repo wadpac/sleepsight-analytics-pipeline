@@ -1,6 +1,5 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
-options(warn=0)
 setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
 # list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64")
 # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -8,14 +7,13 @@ setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 
 roxygen2::roxygenise()
 library(Sleepsight)
 library(data.table)
-options(warn=2)
 #==============================================================
 # input variables
 overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 simplify.behavioralclasses = FALSE
-overwrite.preprocess2csv = FALSE
+overwrite.preprocess2csv = TRUE
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 outputfolder = "/media/vincent/sleepsight/results"
@@ -24,7 +22,7 @@ outputfolder = "/media/vincent/sleepsight/results"
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 removei = grep(x = foldersInStudyFolder,pattern = "results")
 if (length(removei) > 0) foldersInStudyFolder = foldersInStudyFolder[-removei]
-foldersInStudyFolder = "/media/vincent/sleepsight/SS08"
+
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")

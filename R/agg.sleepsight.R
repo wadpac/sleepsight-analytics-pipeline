@@ -184,8 +184,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
           }
           return(MM)
         }
-        print("Dminute steps")
-        print(summary(Dminute$steps[which(is.na(Dminute$steps)==FALSE)]))
         if (shortwindow == 1) {
           Dshort = Dminute[,c("time", "status", "steps")]
         } else {
@@ -195,30 +193,19 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
           colnames(Dshort2) = c("time", "steps")
           Dshort = merge(Dshort, Dshort2,by="time")
         }
-        print("Dshort steps")
-        print(summary(Dshort$steps[which(is.na(Dshort$steps)==FALSE)]))
+      
         Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
         Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
         colnames(Dlong) = c("time", "status")
         colnames(Dlong2) = c("time", "steps")
         Dlong = merge(Dlong, Dlong2,by="time")
-        print("Dlong steps 1")
-        print(summary(Dlong$steps[which(is.na(Dlong$steps)==FALSE)]))
         Dshort = AddTimeToDF(Dshort) 
         DshortB = Dshort # used only for calculating D24HR
         Dshort = status2factor(Dshort) # used as output
         Dlong = AddTimeToDF(Dlong)
         Dlong = status2factor(Dlong)
-        
-        print("Dshort steps 2")
-        print(summary(Dshort$steps[which(is.na(Dshort$steps)==FALSE)]))
-        
-        print("Dlong steps 2")
-        print(summary(Dlong$steps[which(is.na(Dlong$steps)==FALSE)]))
-        llll
         #========================================================
         # Aggregate per day
-        
         NSinH = 60 / shortwindow #number of shortwindows (length in minuntes) in an hours
         
         sleepdur_perday = aggregate(x = DshortB$status,by = list(date = DshortB$date),FUN = function(x) length(which(x==-1)))
@@ -244,29 +231,17 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         missing_dur_perday = aggregate(x = DshortB$status,by = list(date = DshortB$date),FUN = function(x) length(which(x==5)))
         missing_dur_perday = mydivfun(missing_dur_perday,dn=NSinH)
         colnames(missing_dur_perday) = c("date","missing_dur")
-        kk
-        cat("\n")
         
-        print("short")
-        print(summary(DshortB$steps))
-        print(DshortB[which(is.na(DshortB$steps) == FALSE)[1:10],])
         steps_perday = aggregate(x = DshortB$steps,by = list(date = DshortB$date),FUN = mysum)
-        steps_perday = mydivfun(steps_perday,dn=NSinH)
+        # Note: not dividing by number of short windows in a hours, because we want this to be the sum
         colnames(steps_perday) = c("date","total_steps")
-        
-        print("per day")
-        print(summary(steps_perday$total_steps))
-        print(steps_perday[100:110,])
-        
-        print("long")
-        print(summary(Dlong$steps))
-        kkk
         D24HR = merge(sleepdur_perday,activedur_perday,by="date")
         D24HR = merge(D24HR,inactivedur_perday,by="date")
         D24HR = merge(D24HR,susindur_perday,by="date")
         D24HR = merge(D24HR,inconclusive_dur_perday,by="date")
         D24HR = merge(D24HR,missing_dur_perday,by="date")
         D24HR = merge(D24HR,steps_perday,by="date")
+      
         #--------------------------------------------------------
         # Calculate other summary statistics:
         # simplify classes to be able to do L5M10 analysis
