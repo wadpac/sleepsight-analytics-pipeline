@@ -46,7 +46,7 @@ removei = grep(x = foldersInStudyFolder,pattern = nameOfOutputFolder)
 if (length(removei) > 0) foldersInStudyFolder = foldersInStudyFolder[-removei]
 
 if (length(foldersInStudyFolder) == 0) stop(paste0("\nNo folders found inside ",studyfolder))
-foldersInStudyFolder = "/media/vincent/sleepsight/SS08"
+
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
