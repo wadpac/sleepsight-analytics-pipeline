@@ -90,7 +90,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       x$timestamp = as.POSIXlt(x$timestamp,origin="1970-1-1",tz=desiredtz)
       # aggregate to 1 minute
       x$timestamp_num = round(as.numeric(x$timestamp)/ 60)*60
-      x = subset(x, select = -timestamp)
+      x = subset(x, select = -c("timestamp"))
       mysum = function(x) {
         if (length(which(is.na(x) == FALSE)) > 0) {
           S = sum(x, na.rm = TRUE)
@@ -103,7 +103,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       x = aggregate(mydf[,"steps"],by = list(mydf$timestamp_num),FUN = mysum)
       colnames(x) = c("timestamp_num","steps")
       x$time = as.POSIXlt(x$timestamp_num,origin="1970-1-1",tz=desiredtz)
-      x = subset(x, select = -timestamp_num)
+      x = subset(x, select = -c("timestamp_num"))
       return(x)
     }
     if ("withings_act" %in% ls()) { # PDK

@@ -7,7 +7,7 @@
 #' @return outputfolder the name of the RData file where all extracted data is stored.
 #' @export
 preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
-  
+  cat("\n* Preprocess")
   channelfolders = c(list.dirs(paste0(personfolder,"/Phone_sensors"), recursive=FALSE),
                       list.dirs(paste0(personfolder,"/Sleep_diary"), recursive=FALSE))
   txt_files_in_folder = dir(personfolder, recursive=TRUE,pattern = ".tx",full.names = TRUE)
@@ -57,15 +57,17 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
     if (length(withingsi) > 0) {
       withingsfolder = channelfolders[withingsi]
     } else { # files are not in Withings folder yet, create the folder and copy them there
-      cat("\n Copying files to new Withings-data folder")
+      
       withingsfolder = paste0(personfolder,"/Withings-data" )
       if (!dir.exists(withingsfolder)) dir.create(withingsfolder)
-      fn_wit = dir(personfolder,recursive = F,full.names = F) # filenames in Withings folder
-      withingsfiles = fn_wit[grep("withings",x = fn_wit)]
-      for (ki in 1:length(withingsfiles)) {
-        file.copy(from = paste0(personfolder,"/",withingsfiles[ki]),
-                  to = paste0(withingsfolder,"/",withingsfiles[ki]))
-      }
+      # fn_wit = dir(personfolder,recursive = F,full.names = F) # filenames in person folder folder
+      fn_wit = dir(withingsfolder,recursive = F,full.names = F) # filenames in person folder folder
+      # withingsfiles = fn_wit[grep("withings",x = fn_wit)]
+      # # Copying files to new Withings-data folder:
+      # for (ki in 1:length(withingsfiles)) {
+      #   file.copy(from = paste0(personfolder,"/",withingsfiles[ki]),
+      #             to = paste0(withingsfolder,"/",withingsfiles[ki]))
+      # }
     }
     if (length(withingsfolder) > 0) {
       # check whether there is direct download data or pdk data
