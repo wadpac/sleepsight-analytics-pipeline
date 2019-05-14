@@ -3,12 +3,13 @@
 #' @param outputfolder RData datafile where the output of preprocess is stored.
 #' @param csvfile file name where data overview needs to be stored
 #' @param desiredtz timezone (character) in Europe/London format
+#' @param overwrite.preprocess2csv whether to overwrite existing csvfile
 #' @return no output, just a file is stored
 #' @export
 #' @importFrom utils write.csv
-export2csv = function(outputfolder, csvfile, desiredtz) {
-  if (!file.exists(csvfile)) {
-    
+export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv) {
+  if (!file.exists(csvfile) | overwrite.preprocess2csv == TRUE) {
+    cat("\n* Export to csv")
     # to avoid warning "no visible binding for global variable " by R CMD check
     # when it sees that we are using undeclared objects, which actually are loaded
     PhoneAcc =withings_act = withings_actDD = AppHalted = c()
@@ -29,11 +30,24 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       x_60sec = as.POSIXlt(x_num,origin="1970-01-01",tz=desiredtz)
       return(x_60sec)
     }
-    addToDF = function(x=c(),y=c()) {
+    addToDF = function(x=c(),y=c(), desiredtz) {
       if (length(x) == 0) {
         dat = y
       } else {
+        convertback = FALSE
+        cx = class(x$time)
+        cy = class(y$time)
+        if (length(cx) == length(cy) & length(cy) == 2) {
+          if (cx[1] != cy[1] | cx[2] != cy[2]) {
+            x$time = as.character(x$time)
+            y$time = as.character(y$time)
+            convertback = TRUE
+          }
+        }
         dat = merge(x, y, by="time", all = TRUE)
+        if (convertback == TRUE) {
+          dat$time = as.POSIXlt(dat$time,origin="1970-01-01",tz=desiredtz)
+        }
       }
       return(dat)
     }
@@ -45,56 +59,80 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
     if ("lightOnTimes" %in% ls()) {
       lightOnTimes = aggregatePerMinute(lightOnTimes, desiredtz) # from 5 to 60 seconds
       lightOn = data.frame(time = lightOnTimes,lighton=TRUE)
-      df = addToDF(df,lightOn)
+      df = addToDF(df,lightOn, desiredtz)
     }
     if ("ScreenOnTimes" %in% ls()) {
       ScreenOnTimes = aggregatePerMinute(ScreenOnTimes, desiredtz) # from 1 to 60 seconds
       ScreenOn = data.frame(time = ScreenOnTimes,screenon = TRUE)
-      df = addToDF(df,ScreenOn)
+      df = addToDF(df,ScreenOn, desiredtz)
     }
     if ("MovementGPSTimes" %in% ls()) {
       MovementGPSTimes = aggregatePerMinute(MovementGPSTimes, desiredtz) #from 1 to 60 seconds
       GPSmove = data.frame(time = MovementGPSTimes,GPSmove = TRUE)
-      df = addToDF(df,GPSmove)
+      df = addToDF(df,GPSmove, desiredtz)
     }
     if ("AppActiveTimes" %in% ls()) {
       AppActiveTimes = aggregatePerMinute(AppActiveTimes, desiredtz) # from 5 to 60 seconds
       appactive = data.frame(time = AppActiveTimes,AppAct = TRUE)
-      df = addToDF(df,appactive)
+      df = addToDF(df,appactive, desiredtz)
     }
     if ("batInteractTimes" %in% ls()) {
       batInteractTimes = aggregatePerMinute(batInteractTimes, desiredtz) # from 1 to 60 seconds
       batinteract = data.frame(time = batInteractTimes, batinteract = TRUE)
-      df = addToDF(df,batinteract)
+      df = addToDF(df,batinteract, desiredtz)
     }
     if ("PhoneAcc" %in% ls()) {
       PhoneAccTimes = PhoneAcc$Created.Date.POSIX[which((PhoneAcc$acceleration/9.81) > 0.03)]
       phoneacc = data.frame(time = PhoneAccTimes, phoneacc = TRUE)
-      df = addToDF(df,phoneacc)
+      df = addToDF(df,phoneacc, desiredtz)
+    }
+    aggregate_withingsact = function(x) {
+      x$timestamp = as.POSIXlt(x$timestamp,origin="1970-1-1",tz=desiredtz)
+      # aggregate to 1 minute
+      x$timestamp_num = round(as.numeric(x$timestamp)/ 60)*60
+      x = subset(x, select = -timestamp)
+      mysum = function(x) {
+        if (length(which(is.na(x) == FALSE)) > 0) {
+          S = sum(x, na.rm = TRUE)
+        } else {
+          S = 0
+        }
+        return(S)
+      }
+      mydf = x
+      x = aggregate(mydf[,"steps"],by = list(mydf$timestamp_num),FUN = mysum)
+      colnames(x) = c("timestamp_num","steps")
+      x$time = as.POSIXlt(x$timestamp_num,origin="1970-1-1",tz=desiredtz)
+      x = subset(x, select = -timestamp_num)
+      return(x)
     }
     if ("withings_act" %in% ls()) { # PDK
       if ("infoentered" %in% colnames(withings_act)) {
-        select = which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)
+        movei = which(withings_act$infoentered == TRUE | withings_act$movement == TRUE)
       } else {
-        select = which(withings_act$movement == TRUE)
+        movei = which(withings_act$movement == TRUE)
       }
-      WithingsMoveTimes = withings_act$timestamp[select] 
-      WithingsMoveTimes = as.POSIXlt(WithingsMoveTimes,origin="1970-1-1",tz=desiredtz)
-      WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
-      withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_pdk  = TRUE)
-      df = addToDF(df,withingsMove)
+      WithingsMovement = subset(withings_act[movei,],select = c("timestamp","steps"))
+      WithingsMovement = aggregate_withingsact(WithingsMovement)
+      WithingsMovement$withingsMove_pdk = TRUE
+      CLWM = colnames(WithingsMovement)
+      colnames(WithingsMovement)[which(CLWM == "steps")] = "steps_pdk"
+      df = addToDF(df, WithingsMovement, desiredtz)
+      rm(WithingsMovement)
     }
     if ("withings_actDD" %in% ls()) { # Direct download
       if ("infoentered" %in% colnames(withings_actDD)) {
-        select = which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)
+        movei = which(withings_actDD$infoentered == TRUE | withings_actDD$movement == TRUE)
       } else {
-        select = which(withings_actDD$movement == TRUE)
+        movei = which(withings_actDD$movement == TRUE)
       }
-      WithingsMoveTimes = withings_actDD$timestamp[select] 
-      WithingsMoveTimes = as.POSIXlt(as.character(WithingsMoveTimes),origin="1970-1-1",tz=desiredtz)
-      WithingsMoveTimes = aggregatePerMinute(WithingsMoveTimes, desiredtz) # from 1 to 60 seconds
-      withingsMove = data.frame(time = WithingsMoveTimes, withingsMove_dd  = TRUE)
-      df = addToDF(df,withingsMove)
+      withings_actDD$steps = as.numeric(withings_actDD$steps) # steps are stored as factor
+      WithingsMovement = subset(withings_actDD[movei,],select = c("timestamp","steps"))
+      WithingsMovement = aggregate_withingsact(WithingsMovement)
+      WithingsMovement$withingsMove_dd = TRUE
+      CLWM = colnames(WithingsMovement)
+      colnames(WithingsMovement)[which(CLWM == "steps")] = "steps_dd"
+      df = addToDF(df, WithingsMovement, desiredtz)
     }
     if ("withings_sleep" %in% ls()) { # PDK
       withings_sleep=withings_sleep[,-which(colnames(withings_sleep) == "statecode")]
@@ -104,9 +142,9 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       sleep_deep_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="deep-sleep")],deepsleep_pdk=TRUE)
       sleep_light_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="light-sleep")],lightsleep_pdk=TRUE)
       sleep_awake_pdk = data.frame(time=withings_sleep$timestamp[which(withings_sleep$sleepstate=="awake")],awake_pdk=TRUE)
-      df = addToDF(df,sleep_deep_pdk)
-      df = addToDF(df,sleep_light_pdk)
-      df = addToDF(df,sleep_awake_pdk)
+      df = addToDF(df,sleep_deep_pdk,desiredtz)
+      df = addToDF(df,sleep_light_pdk,desiredtz)
+      df = addToDF(df,sleep_awake_pdk,desiredtz)
     }
     if ("withings_sleepDD" %in% ls()) { # Direct download
       WSN = colnames(withings_sleepDD)
@@ -115,14 +153,14 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       sleep_deep_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="deep-sleep")],deepsleep_dd=TRUE)
       sleep_light_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="light-sleep")],lightsleep_dd=TRUE)
       sleep_awake_dd = data.frame(time=withings_sleepDD$timestamp[which(withings_sleepDD$sleepstate=="awake")],awake_dd=TRUE)
-      df = addToDF(df,sleep_deep_dd)
-      df = addToDF(df,sleep_light_dd)
-      df = addToDF(df,sleep_awake_dd)
+      df = addToDF(df,sleep_deep_dd,desiredtz)
+      df = addToDF(df,sleep_light_dd, desiredtz)
+      df = addToDF(df,sleep_awake_dd,desiredtz)
     }
     if ("AppHalted" %in% ls()) {
       AppHaltedTimes = aggregatePerMinute(AppHalted, desiredtz) # from 1 to 60 seconds
       AppHaltedTimes = data.frame(time = AppHaltedTimes, AppHalted  = TRUE)
-      df = addToDF(df,AppHaltedTimes)
+      df = addToDF(df,AppHaltedTimes,desiredtz)
     }
     if ("SunSetRise" %in% ls()) {
       SunSetRise$time = as.POSIXlt(SunSetRise$timestamp,origin="1970-1-1",tz=desiredtz)
@@ -130,21 +168,23 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       CS = colnames(SunSetRise)
       colnames(SunSetRise)[which(CS=="event")] = "SunSetRise"
       SunSetRise=SunSetRise[,-which(colnames(SunSetRise) == "timestamp")]
-      df = addToDF(df,SunSetRise)
+      df = addToDF(df,SunSetRise,desiredtz)
     }
     if ("SleepSurvey" %in% ls()) {
-      # Try to unlogical some rise- before bed-times
-      rst = as.POSIXlt(SleepSurvey$risetime)$hour
-      bdt = as.POSIXlt(SleepSurvey$bedtime)$hour
-      srt = as.POSIXlt(SleepSurvey$surveytime)$hour
-      bedtime_min24 = which(bdt > 18 & rst < bdt) # bedtime -24
-      bedtime_min12 = which(bdt <= 18 & rst < bdt) # bedtime -12
-      risetime_min12 = which(rst > 18 & rst < bdt) # risetime -12
-      risetime_plus24 = which(rst >= srt & rst < (srt + 4) & rst < bdt) # risetime +24
-      if (length(risetime_min12) > 0) SleepSurvey$risetime[risetime_min12] = SleepSurvey$risetime[risetime_min12] - (12*3600)
-      if (length(bedtime_min12) > 0) SleepSurvey$bedtime[bedtime_min12] = SleepSurvey$bedtime[bedtime_min12] - (12*3600)
-      if (length(bedtime_min24) > 0) SleepSurvey$bedtime[bedtime_min24] = SleepSurvey$bedtime[bedtime_min24] - (24*3600)
-      if (length(risetime_plus24) > 0) SleepSurvey$risetime[risetime_plus24] = SleepSurvey$risetime[risetime_plus24] + (24*3600)
+      #------------------------
+      # Try to correct unlogical rise- before bed-times (commented out, we can revisit this later)
+      # rst = as.POSIXlt(SleepSurvey$risetime)$hour
+      # bdt = as.POSIXlt(SleepSurvey$bedtime)$hour
+      # srt = as.POSIXlt(SleepSurvey$surveytime)$hour
+      # bedtime_min24 = which(bdt > 18 & rst < bdt) # bedtime -24
+      # bedtime_min12 = which(bdt <= 18 & rst < bdt) # bedtime -12
+      # risetime_min12 = which(rst > 18 & rst < bdt) # risetime -12
+      # risetime_plus24 = which(rst >= srt & rst < (srt + 4) & rst < bdt) # risetime +24
+      # if (length(risetime_min12) > 0) SleepSurvey$risetime[risetime_min12] = SleepSurvey$risetime[risetime_min12] - (12*3600)
+      # if (length(bedtime_min12) > 0) SleepSurvey$bedtime[bedtime_min12] = SleepSurvey$bedtime[bedtime_min12] - (12*3600)
+      # if (length(bedtime_min24) > 0) SleepSurvey$bedtime[bedtime_min24] = SleepSurvey$bedtime[bedtime_min24] - (24*3600)
+      # if (length(risetime_plus24) > 0) SleepSurvey$risetime[risetime_plus24] = SleepSurvey$risetime[risetime_plus24] + (24*3600)
+      #------------------------
       # Add time in bed (self-reported)
       SleepSurvey$bedtime_num = as.numeric(SleepSurvey$bedtime) # work with numeric time
       SleepSurvey$risetime_num = as.numeric(SleepSurvey$risetime) # work with numeric time
@@ -158,19 +198,20 @@ export2csv = function(outputfolder, csvfile, desiredtz) {
       InBedTimes = as.POSIXlt(InBedTimes, origin="1970-1-1", tz=desiredtz)
       inbed = data.frame(time=InBedTimes, InBed=TRUE)
       inbed = inbed[!duplicated(inbed),] # remove double entries
-      df = addToDF(df,inbed)
+      df = addToDF(df,inbed,desiredtz)
+      df$time = as.POSIXlt(df$time, origin="1970-1-1", tz=desiredtz)
       # add survey
       survey = SleepSurvey[,c("surveytime","positiveFeelings","negativeFeelings","Sleep.Quality.Value","Sleep.Duration")]
       colnames(survey)[which(colnames(survey) == "surveytime")] = "time"
-      df = addToDF(df,survey)
+      df = addToDF(df,survey,desiredtz)
     }
-    
     # add hour in the day to ease plotting
     df$hour = as.POSIXlt(df$time)$hour
     df$min = as.POSIXlt(df$time)$min
     df$min_inday = df$hour * 60 + df$min
     clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
     df= df[!duplicated(df),] # remove double entries
+    df$time = as.POSIXlt(df$time,origin="1970-01-01",tz=desiredtz)
     write.csv(df,file=csvfile,row.names = FALSE)
   }
 }

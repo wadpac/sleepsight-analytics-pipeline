@@ -4,7 +4,7 @@
 \alias{export2csv}
 \title{export2csv}
 \usage{
-export2csv(outputfolder, csvfile, desiredtz)
+export2csv(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv)
 }
 \arguments{
 \item{outputfolder}{RData datafile where the output of preprocess is stored.}
@@ -12,6 +12,8 @@ export2csv(outputfolder, csvfile, desiredtz)
 \item{csvfile}{file name where data overview needs to be stored}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
+
+\item{overwrite.preprocess2csv}{whether to overwrite existing csvfile}
 }
 \value{
 no output, just a file is stored

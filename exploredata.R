@@ -1,19 +1,21 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
+options(warn=0)
 setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
-list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
+# list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64")
+# new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+# if(length(new.packages)) install.packages(new.packages)
 roxygen2::roxygenise()
 library(Sleepsight)
 library(data.table)
-
+options(warn=2)
 #==============================================================
 # input variables
 overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
-overwrite.aggregate = FALSE
+overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 simplify.behavioralclasses = FALSE
+overwrite.preprocess2csv = FALSE
 desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 outputfolder = "/media/vincent/sleepsight/results"
@@ -22,7 +24,7 @@ outputfolder = "/media/vincent/sleepsight/results"
 foldersInStudyFolder = list.dirs(studyfolder, recursive=FALSE)
 removei = grep(x = foldersInStudyFolder,pattern = "results")
 if (length(removei) > 0) foldersInStudyFolder = foldersInStudyFolder[-removei]
-
+foldersInStudyFolder = "/media/vincent/sleepsight/SS08"
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
@@ -31,13 +33,13 @@ for (personfolder in foldersInStudyFolder) {
   cat("\n* Preprocess")
   outputfolderID = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite.preprocess,
                               outputfolder=outputfolder)
-  cat("\n* Export to csv")
+  # export2csv
   personID = unlist(strsplit(outputfolderID,"/preproces/SS"))[2]
   csvfolder = paste0(outputfolder,"/preproces2csv")
   if (!dir.exists(csvfolder)) dir.create(csvfolder)
   csvfile = paste0(csvfolder,"/Sleepsight_overview_",personID,".csv")
-  export2csv(outputfolderID, csvfile, desiredtz)
-  
+  export2csv(outputfolderID, csvfile, desiredtz, overwrite.preprocess2csv)
+  # historgrams
   if (do.plot == TRUE) { # simple historgram of all available data channels within a person
     cat("\n* Create histograms")
     histfolder = paste0(outputfolder,"/histograms")
@@ -45,14 +47,13 @@ for (personfolder in foldersInStudyFolder) {
     histfile = paste0(histfolder,"/histogram_",personID,".png")
     testplot(histfile, csvfile)
   }
-  cat("\n* Aggregate data per: day, 30 minutes, and 1 minute")
+  # aggregate
   aggfolder = paste0(outputfolder,"/aggregated")
   if (!dir.exists(aggfolder)) dir.create(aggfolder)
   aggregatefile = paste0(aggfolder,"/agg.sleepsight_",personID,".RData")
-  
   surveyfile = paste0(outputfolderID,"/SleepSurvey.RData")
-  
   if (!file.exists(aggregatefile) | overwrite.aggregate == TRUE) {
+    cat("\n* Aggregate data per: day, 30 minutes, and 1 minute")
     out = agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz, minmisratio = 1/3, shortwindow = 1, longwindow = 30)
     D24HR = out$D24HR
     Dshort = out$Dshort # 1 minute
