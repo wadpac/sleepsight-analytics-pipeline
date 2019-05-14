@@ -14,6 +14,46 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
   if (!file.exists(csvfile)) {
     cat("\nWarning: csvfile not found as input for aggregation")
   } else {
+    #----------------------------------------------------
+    # declear generic functions used in the code below
+    mysum = function(x) {
+      if (length(which(is.na(x) == FALSE)) > 0) {
+        S = sum(x, na.rm = TRUE)
+      } else {
+        S = 0
+      }
+      return(S)
+    }
+    AddTimeToDF = function(df) {
+      df$time.POSIX = as.POSIXlt(df$time,tz=desiredtz,origin="1970-01-01")
+      df$date = as.character(as.Date(df$time.POSIX))
+      df$hour = df$time.POSIX$hour
+      df$min = df$time.POSIX$min
+      df$hour_in_day = df$hour + (df$min/60)
+      df$month = paste0(format(df$time.POSIX,"%m"),"-",format(df$time.POSIX,"%Y"))
+      df$day = format(df$time.POSIX,"%d")
+      df$weekday = weekdays(df$time.POSIX)
+      return(df)
+    }
+    status2factor = function(df) {
+      # To ease intrerpretation, replace numeric coding by factor names
+      df$status = as.character(df$status)
+      df$status[which(df$status == "1")] = "active"
+      df$status[which(df$status == "0")] = "inactive"
+      df$status[which(df$status == "-1")] = "sleep"
+      df$status[which(df$status == "-2")] = "sustained inactive"
+      df$status[which(df$status == "4")] = "inconclusive"
+      df$status[which(df$status == "5")] = "no data"
+      df$status = as.factor(df$status)
+      return(df)
+    }
+    mydivfun = function(tmp,dn) {
+      # divide tmp by dn while ignore NA values
+      nax = which(is.na(tmp$x) == FALSE); tmp$x[nax] = tmp$x[nax] / dn 
+      return(tmp)
+    }
+    
+    #----------------------------------------------------
     # Load data
     D = data.table::fread(csvfile)
     D = as.data.frame(D)
@@ -23,11 +63,19 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
     CDF = colnames(D)
     do.withings = TRUE
     if ("withingsMove_dd" %in% CDF) {
+      # D$withingsactive = D$steps = 0
       D$withingsactive = D$withingsMove_dd
+      D$steps = D$steps_dd
+      D = subset(D, select = -c("steps_dd", "withingsMove_dd"))
       D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE) #D$awake_dd
+      if ("withingsMove_pdk" %in% CDF) { #ignore pdk if direct download is available
+        D = subset(D, select = -c("steps_pdk", "withingsMove_pdk"))
+      }
     } else {
       if ("withingsMove_pdk" %in% CDF) {
         D$withingsactive = D$withingsMove_pdk
+        D$steps = D$steps_pdk
+        D = subset(D, select = -c("steps_pdk", "withingsMove_pdk"))
         D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE) #, D$awake_pdk
       } else {
         do.withings = FALSE
@@ -64,7 +112,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       
       #----------------------------------------------------
       # Create new dataframe with only status and timestamps
-      tmpmin = D[,c("time","status")]
+      tmpmin = D[,c("time","status", "steps")]
+      
       # Untill here the data may include gaps in time.
       # We will now create continuous time series to ease plotting
       time.POSIX = as.POSIXlt(tmpmin$time,tz=desiredtz)
@@ -80,33 +129,32 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       Dminute$date = as.Date(Dminute$time)
       
       #========================================================
-      # Remove days with not enough data
-      # To do this we have to aggregate per day
-      tmpday_active = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==1)))
-      colnames(tmpday_active) = c("date", "active")
-      tmpday_inactive = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==0)))
-      colnames(tmpday_inactive) = c("date", "inactive")
-      tmpday_sleep = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==-1)))
-      colnames(tmpday_sleep) = c("date", "sleep")
-      tmpday_inconclusive = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==4)))
-      colnames(tmpday_inconclusive) = c("date", "inconclusive")
-      tmpday_missing = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==5)))
-      colnames(tmpday_missing) = c("date", "missing")
-      
-      Dday = merge(tmpday_active,tmpday_inactive,by="date")
-      Dday = merge(Dday,tmpday_sleep,by="date")
-      Dday = merge(Dday,tmpday_missing,by="date")
-      Dday = merge(Dday,tmpday_inconclusive,by="date")
-      # Exclude days with more than minmisratio missing data
-      #  or less than 10 minutes of both active and sleep data
-      #  or less than 1440 minutes in a day
-      DAYLENGTH = aggregate(x = Dminute$status,by = list(date = Dminute$date),FUN = function(x) length(x))
-      shortdays = Dminute$date[which(Dminute$date %in% DAYLENGTH$date[which(DAYLENGTH$x < 1440)] ==  TRUE)]
-      daysexclude = which((Dday$active < 10 & Dday$sleep < 10) | Dday$missing > (1440*(minmisratio)))
-      if (length(shortdays) > 0) { # exclude also days with less 
-        daysexclude = unique(c(daysexclude,which(Dday$date %in% shortdays == TRUE)))
-      }
       # # Note: Day exclusion commented out for now
+      # # Exclude days with more than minmisratio missing data
+      # # Remove days with not enough data
+      # # To do this we have to aggregate per day
+      # tmpday_active = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==1)))
+      # colnames(tmpday_active) = c("date", "active")
+      # tmpday_inactive = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==0)))
+      # colnames(tmpday_inactive) = c("date", "inactive")
+      # tmpday_sleep = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==-1)))
+      # colnames(tmpday_sleep) = c("date", "sleep")
+      # tmpday_inconclusive = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==4)))
+      # colnames(tmpday_inconclusive) = c("date", "inconclusive")
+      # tmpday_missing = aggregate(x = Dminute[,"status"],by = list(date = Dminute$date),FUN = function(x) length(which(x==5)))
+      # colnames(tmpday_missing) = c("date", "missing")
+      # Dday = merge(tmpday_active,tmpday_inactive,by="date")
+      # Dday = merge(Dday,tmpday_sleep,by="date")
+      # Dday = merge(Dday,tmpday_missing,by="date")
+      # Dday = merge(Dday,tmpday_inconclusive,by="date")
+      # #  or less than 10 minutes of both active and sleep data
+      # #  or less than 1440 minutes in a day
+      # DAYLENGTH = aggregate(x = Dminute$status,by = list(date = Dminute$date),FUN = function(x) length(x))
+      # shortdays = Dminute$date[which(Dminute$date %in% DAYLENGTH$date[which(DAYLENGTH$x < 1440)] ==  TRUE)]
+      # daysexclude = which((Dday$active < 10 & Dday$sleep < 10) | Dday$missing > (1440*(minmisratio)))
+      # if (length(shortdays) > 0) { # exclude also days with less 
+      #   daysexclude = unique(c(daysexclude,which(Dday$date %in% shortdays == TRUE)))
+      # }
       # if (length(daysexclude) > 0) {
       #   Dminute = Dminute[-which(Dminute$date %in% Dday$date[daysexclude] == TRUE),]
       #   Dday = Dday[-daysexclude,]
@@ -137,37 +185,20 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
           return(MM)
         }
         if (shortwindow == 1) {
-          Dshort = Dminute[,c("time", "status")]
+          Dshort = Dminute[,c("time", "status", "steps")]
         } else {
-          Dshort = aggregate(x = Dminute$status,by = list(time = Dminute$time_num_short),FUN = calcmode)
+          Dshort = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_short),FUN = calcmode)
+          Dshort2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_short),FUN = mysum)
+          colnames(Dshort) = c("time", "status")
+          colnames(Dshort2) = c("time", "steps")
+          Dshort = merge(Dshort, Dshort2,by="time")
         }
-        Dlong = aggregate(x = Dminute$status,by = list(time = Dminute$time_num_long),FUN = calcmode)
-        colnames(Dshort) = c("time", "status")
+      
+        Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
+        Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
         colnames(Dlong) = c("time", "status")
-        
-        AddTimeToDF = function(df) {
-          df$time.POSIX = as.POSIXlt(df$time,tz=desiredtz,origin="1970-01-01")
-          df$date = as.character(as.Date(df$time.POSIX))
-          df$hour = df$time.POSIX$hour
-          df$min = df$time.POSIX$min
-          df$hour_in_day = df$hour + (df$min/60)
-          df$month = paste0(format(df$time.POSIX,"%m"),"-",format(df$time.POSIX,"%Y"))
-          df$day = format(df$time.POSIX,"%d")
-          df$weekday = weekdays(df$time.POSIX)
-          return(df)
-        }
-        status2factor = function(df) {
-          # To ease intrerpretation, replace numeric coding by factor names
-          df$status = as.character(df$status)
-          df$status[which(df$status == "1")] = "active"
-          df$status[which(df$status == "0")] = "inactive"
-          df$status[which(df$status == "-1")] = "sleep"
-          df$status[which(df$status == "-2")] = "sustained inactive"
-          df$status[which(df$status == "4")] = "inconclusive"
-          df$status[which(df$status == "5")] = "no data"
-          df$status = as.factor(df$status)
-          return(df)
-        }
+        colnames(Dlong2) = c("time", "steps")
+        Dlong = merge(Dlong, Dlong2,by="time")
         Dshort = AddTimeToDF(Dshort) 
         DshortB = Dshort # used only for calculating D24HR
         Dshort = status2factor(Dshort) # used as output
@@ -175,13 +206,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         Dlong = status2factor(Dlong)
         #========================================================
         # Aggregate per day
-        mydivfun = function(tmp,dn) {
-          # divide tmp by dn while ignore NA values
-          nax = which(is.na(tmp$x) == FALSE); tmp$x[nax] = tmp$x[nax] / dn 
-          return(tmp)
-        }
-        
-        NSinH = 60 / shortwindow #number of shortwindows in an hours
+        NSinH = 60 / shortwindow #number of shortwindows (length in minuntes) in an hours
         
         sleepdur_perday = aggregate(x = DshortB$status,by = list(date = DshortB$date),FUN = function(x) length(which(x==-1)))
         sleepdur_perday = mydivfun(sleepdur_perday,dn=NSinH) # convert x-5-minute window of a day into hour
@@ -207,11 +232,16 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         missing_dur_perday = mydivfun(missing_dur_perday,dn=NSinH)
         colnames(missing_dur_perday) = c("date","missing_dur")
         
+        steps_perday = aggregate(x = DshortB$steps,by = list(date = DshortB$date),FUN = mysum)
+        # Note: not dividing by number of short windows in a hours, because we want this to be the sum
+        colnames(steps_perday) = c("date","total_steps")
         D24HR = merge(sleepdur_perday,activedur_perday,by="date")
         D24HR = merge(D24HR,inactivedur_perday,by="date")
         D24HR = merge(D24HR,susindur_perday,by="date")
         D24HR = merge(D24HR,inconclusive_dur_perday,by="date")
         D24HR = merge(D24HR,missing_dur_perday,by="date")
+        D24HR = merge(D24HR,steps_perday,by="date")
+      
         #--------------------------------------------------------
         # Calculate other summary statistics:
         # simplify classes to be able to do L5M10 analysis
@@ -271,7 +301,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       }
     }
     Dshort = Dshort[!duplicated(Dshort),]
-    print(dim(Dshort))
     Dlong = Dlong[!duplicated(Dlong),]
     D24HR = D24HR[!duplicated(D24HR),]
     return(list(D24HR=D24HR,Dshort=Dshort,Dlong=Dlong,Dsurvey=Dsurvey))

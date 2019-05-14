@@ -8,7 +8,7 @@
 #' @importFrom graphics axis hist par title
 #' @importFrom utils read.csv
 testplot = function(histfile, csvfile) {
-
+  cat("\n* plot histograms")
   plothist = function(namevar="",CDF,x="",plottitle="", xpos=Xposi, xlabe=Xlabe) {
     if (namevar %in% CDF)  {
       if (namevar == "SunSetRise") {
