@@ -66,16 +66,16 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       # D$withingsactive = D$steps = 0
       D$withingsactive = D$withingsMove_dd
       D$steps = D$steps_dd
-      D = subset(D, select = -c("steps_dd", "withingsMove_dd"))
+      D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
       D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE) #D$awake_dd
       if ("withingsMove_pdk" %in% CDF) { #ignore pdk if direct download is available
-        D = subset(D, select = -c("steps_pdk", "withingsMove_pdk"))
+        D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
       }
     } else {
       if ("withingsMove_pdk" %in% CDF) {
         D$withingsactive = D$withingsMove_pdk
         D$steps = D$steps_pdk
-        D = subset(D, select = -c("steps_pdk", "withingsMove_pdk"))
+        D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
         D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE) #, D$awake_pdk
       } else {
         do.withings = FALSE

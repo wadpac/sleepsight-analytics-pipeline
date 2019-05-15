@@ -90,7 +90,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       x$timestamp = as.POSIXlt(x$timestamp,origin="1970-1-1",tz=desiredtz)
       # aggregate to 1 minute
       x$timestamp_num = round(as.numeric(x$timestamp)/ 60)*60
-      x = subset(x, select = -c("timestamp"))
+      x = x[,-which(colnames(x) == "timestamp")]
       mysum = function(x) {
         if (length(which(is.na(x) == FALSE)) > 0) {
           S = sum(x, na.rm = TRUE)
@@ -103,7 +103,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       x = aggregate(mydf[,"steps"],by = list(mydf$timestamp_num),FUN = mysum)
       colnames(x) = c("timestamp_num","steps")
       x$time = as.POSIXlt(x$timestamp_num,origin="1970-1-1",tz=desiredtz)
-      x = subset(x, select = -c("timestamp_num"))
+      x = x[,-which(colnames(x) == "timestamp_num")]
       return(x)
     }
     if ("withings_act" %in% ls()) { # PDK
@@ -112,7 +112,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       } else {
         movei = which(withings_act$movement == TRUE)
       }
-      WithingsMovement = subset(withings_act[movei,],select = c("timestamp","steps"))
+      WithingsMovement = withings_act[movei,which(colnames(withings_act) %in% c("timestamp","steps") == TRUE)]
       WithingsMovement = aggregate_withingsact(WithingsMovement)
       WithingsMovement$withingsMove_pdk = TRUE
       CLWM = colnames(WithingsMovement)
@@ -127,7 +127,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
         movei = which(withings_actDD$movement == TRUE)
       }
       withings_actDD$steps = as.numeric(withings_actDD$steps) # steps are stored as factor
-      WithingsMovement = subset(withings_actDD[movei,],select = c("timestamp","steps"))
+      WithingsMovement = withings_actDD[movei,which(colnames(withings_actDD) %in% c("timestamp","steps") == TRUE)]
       WithingsMovement = aggregate_withingsact(WithingsMovement)
       WithingsMovement$withingsMove_dd = TRUE
       CLWM = colnames(WithingsMovement)
