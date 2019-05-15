@@ -12,11 +12,12 @@ library(gridExtra)
 #==============================================================
 # Input arguments for this script:
 
-overwrite.preprocess = FALSE# whether to overwrite previously generated preprocessing output with this R code.
-overwrite.aggregate = FALSE
+overwrite.preprocess = FALSE # whether to overwrite previously generated preprocessing output with this R code.
+overwrite.preprocess2csv = TRUE
+overwrite.aggregate = TRUE
 do.plot = FALSE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 simplify.behavioralclasses = FALSE
-overwrite.preprocess2csv = FALSE
+
 desiredtz = "Europe/London"
 
 # Note: see README for expected folder structure!
@@ -46,6 +47,8 @@ removei = grep(x = foldersInStudyFolder,pattern = nameOfOutputFolder)
 if (length(removei) > 0) foldersInStudyFolder = foldersInStudyFolder[-removei]
 
 if (length(foldersInStudyFolder) == 0) stop(paste0("\nNo folders found inside ",studyfolder))
+
+foldersInStudyFolder = "/media/vincent/sleepsight/SS08"
 
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
