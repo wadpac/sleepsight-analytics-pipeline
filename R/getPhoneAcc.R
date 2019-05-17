@@ -26,7 +26,7 @@ getPhoneAcc = function(filefolder, desiredtz, test_run=FALSE) {
   
   
   blocksize = 1500000
-  
+  # fn_acc = fn_acc[length(fn_acc)]
   for (j in 1:length(fn_acc)) {
     cat(paste0("\nLoading file ",fn_acc[j]))
     endlastblock = 0
@@ -54,12 +54,21 @@ getPhoneAcc = function(filefolder, desiredtz, test_run=FALSE) {
         acc = as.data.frame(acc)
         acc = replaceVarWithSpace(acc)
         NR = nrow(acc)
+        acc$Normalized.Timestamp = bit64::as.integer64(acc$Normalized.Timestamp)
+        # remove invalid timestamps (occassionally timestamps are not valid)
+        acc = acc[which(is.na(acc$Normalized.Timestamp) == FALSE),] # remove any non-numeric values
         acc$Created.Date.POSIX = as.POSIXlt((acc$Normalized.Timestamp)/(1e+9),tz=desiredtz,origin="1970-1-1")
         acc = acc[order(acc$Created.Date.POSIX),]
         # calculate indicator of movement (sometimes referred to as ENMO):
         acc$acceleration = pmax(0,sqrt(acc$X^2+acc$Y^2+acc$Z^2)-9.81)
         acc$dt = 0
-        acc$dt[2:NR] = diff(as.numeric(acc$Created.Date.POSIX))
+        tmp_Created.Date.POSIX_num = as.numeric(acc$Created.Date.POSIX)
+
+        # remove invalid timestamps (occassionally timestamps are not valid)
+        valid = which(is.na(tmp_Created.Date.POSIX_num) == FALSE)
+        acc = acc[valid,]
+        NR = nrow(acc)
+        acc$dt[2:NR] = diff(tmp_Created.Date.POSIX_num[valid])
         acc$dt[1] = acc$dt[2] # dt = deltatime
         acc$sf = 1/acc$dt
         acc = acc[which(acc$sf != Inf & acc$sf != 0 & acc$sf < 200),]
