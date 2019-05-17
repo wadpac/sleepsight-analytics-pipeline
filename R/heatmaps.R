@@ -42,7 +42,7 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, simplify.be
   png(filename = heatmapsfile ,width = 15, height = 7,units = "in",res = 400)
   myplot = ggplot(Dshort) +
     geom_tile(
-      aes(date, Dshort$hour_in_day, fill=Dshort$status, color=Dshort$status)) +
+      aes(date, Dshort$hour_in_day, fill=Dshort$status)) + #, color=Dshort$status
     xlab("") +
     ylab("Hour in day") +
     theme_bw() +
