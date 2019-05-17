@@ -10,7 +10,23 @@ getPhoneAcc = function(filefolder, desiredtz, test_run=FALSE) {
   fn_acc = dir(filefolder)
   outputMatrixAccstore = matrix(0,0,3)
   
+  # if more than 9 files, then order correctly, because 0 1, 10, 11, 2 is default
+  NumF = length(fn_acc)
+  if (NumF > 9) {
+    neworder = rep(0,NumF)
+    for (i in 1:NumF) {
+      tmp = unlist(strsplit(fn_acc[i],"_"))
+      tmp = tmp[length(tmp)]
+      tmp = unlist(strsplit(tmp,"[.]t"))[1]
+      neworder[i] = as.numeric(tmp)
+    } 
+    neworder = order(neworder)
+    fn_acc = fn_acc[neworder]
+  }
+  
+  
   blocksize = 1500000
+  
   for (j in 1:length(fn_acc)) {
     cat(paste0("\nLoading file ",fn_acc[j]))
     endlastblock = 0
