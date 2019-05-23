@@ -18,7 +18,7 @@ overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 simplify.behavioralclasses = FALSE
 
-withings.mode = "pdk" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
+withings.mode = "dd" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
 
 desiredtz = "Europe/London"
 
@@ -50,7 +50,7 @@ if (length(removei) > 0) foldersInStudyFolder = foldersInStudyFolder[-removei]
 
 if (length(foldersInStudyFolder) == 0) stop(paste0("\nNo folders found inside ",studyfolder))
 
-foldersInStudyFolder = "/media/vincent/sleepsight/SS08"
+# foldersInStudyFolder = "/media/vincent/sleepsight/SS14"
 
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
