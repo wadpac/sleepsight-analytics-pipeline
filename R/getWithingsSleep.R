@@ -18,6 +18,7 @@ getWithingsSleep = function(filefolder, desiredtz, directdownload = TRUE) {
     if (length(fn_wit_csv) > 0) { # Withings direct download
       S = data.table::fread(file=fn_wit_csv[grep("tracker_sleep",x = fn_wit_csv)],sep=",")
       S = as.data.frame(S)
+      
       # add timestamps in POSIX format to make them R friendly
       removeLastSemicol = function(x) {
         tmp = unlist(strsplit(x,":"))
@@ -49,11 +50,11 @@ getWithingsSleep = function(filefolder, desiredtz, directdownload = TRUE) {
       CumDuration = unlist(lapply(S$duration,SplitValues,cumsum=TRUE))
       # S2 = mefa::rep.data.frame(S, times = S$N) # create new data.frame with extra rows
       S2 = as.data.frame(lapply(S, rep, times = S$N)) # create new data.frame with extra rows
-      
       S2$SleepStage = SleepStagePerMinute
       S2$duration = Duration
       S2$cumdur = CumDuration 
       S2$Created.Date.POSIX = S2$Created.Date.POSIX + S2$cumdur
+
       rm(S)
       S = S2[,-which(colnames(S2) %in% c("start","duration","cumdur","N","value") ==  TRUE)]
       S$Date = as.Date(S$Created.Date.POSIX)
@@ -73,6 +74,14 @@ getWithingsSleep = function(filefolder, desiredtz, directdownload = TRUE) {
       devsle = replaceVarWithSpace(devsle)
       devsle = addPOSIX(devsle, desiredtz)
       WithingsSleep = devsle[,c("Source","Created.Date.POSIX","start_date","end_date","state")]
+      
+      # Explore whether timestamp issue in data collected after August 2018 can easily be correct (conclusion: NO)
+      # # if start and end time are identical then pdk may have made a mistake:
+      # start_is_end = which(WithingsSleep$end_date == WithingsSleep$start_date)
+      # if (length(start_is_end) > 0) { # use start next as end for current
+      #   sensible = which(WithingsSleep$end_date[start_is_end] < WithingsSleep$start_date[start_is_end+1])
+      #   WithingsSleep$end_date[start_is_end[sensible]] = WithingsSleep$start_date[start_is_end[sensible]+1]
+      # }
       # Now downsample to minute
       Mode <- function(x) {
         ux <- unique(x)
@@ -83,6 +92,14 @@ getWithingsSleep = function(filefolder, desiredtz, directdownload = TRUE) {
       if (nrow(WithingsSleep) != 0) {
         WS60sec = aggregate(x = WithingsSleep[,c("state")],FUN = Mode, by = list(start_date = WithingsSleep$start_date,
                                                                                  end_date = WithingsSleep$end_date))
+        # x11()
+        # timeinplot = as.POSIXlt(WS60sec$start_date, origin="1970-1-1",tz=desiredtz)
+        # plot(WS60sec$end_date - WS60sec$start_date,type="l", main="P2", axes = FALSE)
+        # time2 = timeinplot[seq(1,length(timeinplot),by=1000)]
+        # LABE = as.character(as.Date(timeinplot[which(timeinplot %in% time2 == TRUE)]))
+        # axis(side = 1, at = which(timeinplot %in% time2 == TRUE), labels = LABE, las = 3)
+
+        
         # Now generate timeseries rather than only begin and end times.
         # Initialize vectors:
         WSTimes = seq(WS60sec$start_date[1],WS60sec$end_date[nrow(WS60sec)],by=60)

@@ -7,9 +7,12 @@
 #' @param minmisratio minimum missing ratio per day, day will be ignored if more data is missing
 #' @param shortwindow short window length in minutes to aggregate to
 #' @param longwindow long window length in minutes to aggregate to
+#' @param withings.mode character ("pdk", "dd") to indicate whether to prioritise pdk or dd
 #' @return List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey.
 #' @export
-agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisratio=1/3, shortwindow = 1, longwindow = 30) {
+agg.sleepsight = function(aggregatefile, csvfile, surveyfile, 
+                          desiredtz, minmisratio=1/3, shortwindow = 1, longwindow = 30,
+                          withings.mode = "dd") {
   D24HR = Dshort = Dlong = Dsurvey = c()
   if (!file.exists(csvfile)) {
     cat("\nWarning: csvfile not found as input for aggregation")
@@ -62,25 +65,36 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
     # any data from this person.
     CDF = colnames(D)
     do.withings = TRUE
-    if ("withingsMove_dd" %in% CDF) {
-      # D$withingsactive = D$steps = 0
-      D$withingsactive = D$withingsMove_dd
-      D$steps = D$steps_dd
-      D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
-      D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE) #D$awake_dd
-      if ("withingsMove_pdk" %in% CDF) { #ignore pdk if direct download is available
-        D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
-      }
+    
+    if ("withingsMove_dd" %in% CDF == FALSE & "withingsMove_pdk" %in% CDF == FALSE) {
+      do.withings = FALSE
     } else {
-      if ("withingsMove_pdk" %in% CDF) {
-        D$withingsactive = D$withingsMove_pdk
-        D$steps = D$steps_pdk
-        D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
-        D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE) #, D$awake_pdk
+      if ("withingsMove_dd" %in% CDF & withings.mode != "pdk" | 
+          (withings.mode == "pdk" & ("withingsMove_pdk" %in% CDF == FALSE))) {
+        D$withingsactive = D$withingsMove_dd
+        D$steps = D$steps_dd
+        D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
+        D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE) #D$awake_dd
+        if ("withingsMove_pdk" %in% CDF) { #ignore pdk if direct download is available
+          D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
+        }
+        withings.mode = "dd"
       } else {
-        do.withings = FALSE
+        if ("withingsMove_pdk" %in% CDF) {
+          D$withingsactive = D$withingsMove_pdk
+          D$steps = D$steps_pdk
+          D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
+          D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE) #, D$awake_pdk
+          if ("withingsMove_dd" %in% CDF) { #ignore dd if direct download is available
+            D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
+          }
+          withings.mode = "pdk"
+          # } else {
+          #   do.withings = FALSE
+        }
       }
     }
+    
     if (do.withings == TRUE) { # only process file if there is Withingsdata
       # Define status categories
       #-------------------------------------------------------
@@ -100,7 +114,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       D$status[inactive] = 0 # lack of movement, but no sleep detected with Withings (phone app activity is allowed)
       #----------------------------------------------------
       # ACTIVE
-      active = which(D$GPSmove == TRUE | D$batinteract == TRUE | D$phoneacc == TRUE | D$withingsactive == TRUE)
+      active = which((D$GPSmove == TRUE | D$batinteract == TRUE | D$phoneacc == TRUE | D$withingsactive == TRUE) & 
+                       (D$withingsleep == 0 | is.na(D$withingsleep) == TRUE)) # note: I added this line to make sure sleep is not overwritten
       D$status[active] = 1 # any movement (phone app activity is not sufficient, only phone movement or Withings activity counts)
       #----------------------------------------------------
       # INCONCLUSIVE
@@ -109,7 +124,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
                              is.na(D$batinteract == TRUE) & is.na(D$phoneacc) == TRUE &
                              is.na(D$AppHalted) == TRUE & is.na(D$withingsactive) == TRUE & is.na(D$withingsleep) == TRUE)
       D$status[inconclusive] = 4 
-      
       #----------------------------------------------------
       # Create new dataframe with only status and timestamps
       tmpmin = D[,c("time","status", "steps")]
@@ -127,7 +141,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
       if (length(missing_status) > 0) Dminute$status[missing_status] = 5
       Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
       Dminute$date = as.Date(Dminute$time)
-      
       #========================================================
       # # Note: Day exclusion commented out for now
       # # Exclude days with more than minmisratio missing data
@@ -193,7 +206,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
           colnames(Dshort2) = c("time", "steps")
           Dshort = merge(Dshort, Dshort2,by="time")
         }
-      
         Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
         Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
         colnames(Dlong) = c("time", "status")
@@ -241,7 +253,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
         D24HR = merge(D24HR,inconclusive_dur_perday,by="date")
         D24HR = merge(D24HR,missing_dur_perday,by="date")
         D24HR = merge(D24HR,steps_perday,by="date")
-      
+        
         #--------------------------------------------------------
         # Calculate other summary statistics:
         # simplify classes to be able to do L5M10 analysis
@@ -303,6 +315,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile, desiredtz, minmisr
     Dshort = Dshort[!duplicated(Dshort),]
     Dlong = Dlong[!duplicated(Dlong),]
     D24HR = D24HR[!duplicated(D24HR),]
-    return(list(D24HR=D24HR,Dshort=Dshort,Dlong=Dlong,Dsurvey=Dsurvey))
+    return(list(D24HR=D24HR,Dshort=Dshort,Dlong=Dlong,Dsurvey=Dsurvey, withings.mode = withings.mode))
   }
 }

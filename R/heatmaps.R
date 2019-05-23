@@ -20,6 +20,7 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, simplify.be
     doubleplot$date = doubleplot$date - 1
     x = rbind(x, doubleplot)
     x = x[order(x$hour_in_day,x$date),]
+    # x = x[order(x$date, x$hour_in_day),]
     x$date = as.character(x$date)
     return(x)
   }

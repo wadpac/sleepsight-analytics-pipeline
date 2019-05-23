@@ -39,7 +39,6 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
       }
     }
   }
-
   if (length(ID) == 0) {
     cat(paste0("\nWarning: Person ID number not retrieved"))
     cat(paste0("\n",personfolder))
@@ -83,7 +82,8 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
         fullpathout = paste0(outputfolder,"/Withings-DirectDownload.RData")
         if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
           for (wfi in 1:length(withingsfolder)) {
-            filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"./"))[2],"/")
+            # filefolder = paste0(unlist(strsplit(withingsfolder[wfi],"/"))[2],"/")
+            filefolder = withingsfolder[wfi]
             # note that function WithingsSleep and WithingsActivity search the filefolder recursevely for files that meet the description
             withings_actDD = getWithingsActivity(filefolder, desiredtz, directdownload)
             withings_sleepDD = getWithingsSleep(filefolder, desiredtz, directdownload)

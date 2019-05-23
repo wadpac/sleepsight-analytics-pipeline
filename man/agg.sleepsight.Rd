@@ -5,7 +5,8 @@
 \title{agg.sleepsight}
 \usage{
 agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
-  minmisratio = 1/3, shortwindow = 1, longwindow = 30)
+  minmisratio = 1/3, shortwindow = 1, longwindow = 30,
+  withings.mode = "dd")
 }
 \arguments{
 \item{aggregatefile}{RData file where the output of aggregation will be stored.}
@@ -21,6 +22,8 @@ agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
 \item{shortwindow}{short window length in minutes to aggregate to}
 
 \item{longwindow}{long window length in minutes to aggregate to}
+
+\item{withings.mode}{character ("pdk", "dd") to indicate whether to prioritise pdk or dd}
 }
 \value{
 List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey.
