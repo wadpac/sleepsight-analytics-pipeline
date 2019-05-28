@@ -9,8 +9,8 @@ Maintainer: Vincent T van Hees <vincentvanhees@gmail.com>
 Description: For processesing mobile and wearable sensor data generated in the sleepsight study.
 URL: https://github.com/wadpac/sleepsight-analytics-pipeline
 License: Apache License version 2.0 | file LICENSE
-Suggests: bit64, pracma, zoo,  gridExtra
-Imports: data.table, ggplot2
+Suggests: bit64, pracma, zoo, gridExtra
+Imports: data.table, ggplot2, cowplot
 Depends: stats, utils, R (>= 3.1.2), grDevices, graphics
 NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
