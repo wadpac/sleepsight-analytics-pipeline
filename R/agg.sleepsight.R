@@ -306,7 +306,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         if (file.exists(surveyfile) == TRUE) {
           SleepSurvey = c()
           load(surveyfile)
-          Dsurvey = SleepSurvey[,c("positiveFeelings","negativeFeelings","Sleep.Quality.Value","surveytime")]
+          Dsurvey = SleepSurvey[,c("positiveFeelings","negativeFeelings","Sleep.Quality.Value","surveytime","bedtime","risetime")]
           Dsurvey$date = as.Date(as.POSIXlt(Dsurvey$surveytime,tz=desiredtz))
         }
         
