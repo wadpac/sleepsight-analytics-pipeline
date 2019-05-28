@@ -1,7 +1,8 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
+# graphics.off()
 setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
-# list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64", "gridExtra", "ggplot2")
+# list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64", "gridExtra", "ggplot2", "cowplot")
 # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 # if(length(new.packages)) install.packages(new.packages)
 roxygen2::roxygenise()
@@ -98,14 +99,15 @@ for (personfolder in foldersInStudyFolder) {
   write.csv(Dlong, file = paste0(aggfolder,"/Aggregated_per_longwindow_",withings.mode,"_",personID,".csv"),row.names = FALSE)
   write.csv(D24HR, file = paste0(aggfolder,"/Aggregated_per_day_",withings.mode,"_",personID,".csv"),row.names = FALSE)
   write.csv(Dsurvey, file = paste0(aggfolder,"/Simplified_Survey_",withings.mode,"_",personID,".csv"),row.names = FALSE)
-  
+
   if (length(Dshort) > 0 & length(Dlong) > 0) {
     
     heatmapsfile = paste0(heatmapsfolder,"/heatmap_",withings.mode,"_",personID,".png")
     heatmapsfile_steps = paste0(heatmapsfolder,"/heatmap_steps_",withings.mode,"_",personID,".png")
     
     # heatmaps of status and steps
-    heatmaps(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, simplify.behavioralclasses)
+    heatmaps(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, 
+             simplify.behavioralclasses, Dsurvey)
     # time series
     plot_timeseries(D24HR, Dsurvey, timeseriesfile)
   }
