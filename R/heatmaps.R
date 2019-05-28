@@ -90,8 +90,8 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
     xlab("") +
     ylab("Hour in day") +
     theme_bw() +
-    scale_colour_manual(name="Status", values = coldic) +
-    scale_fill_manual(name="Status", values = coldic) +
+    scale_colour_manual(name="Passive data", values = coldic) +
+    scale_fill_manual(name="Passive data", values = coldic) +
     scale_x_discrete(breaks = dates_on_x_axis) +
     theme(axis.text.x = element_text(angle = 45))
   
@@ -103,7 +103,7 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
       xlab("") +
     ylab("Hour in day") +
     theme_bw() +
-    scale_colour_manual(name="Action", values = coldic2) +
+    scale_colour_manual(name="Sleep Diary", values = coldic2) +
     scale_x_discrete(breaks = dates_on_x_axis) +
     theme(axis.text.x = element_text(angle = 45))
 
