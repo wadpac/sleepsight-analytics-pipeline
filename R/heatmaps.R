@@ -83,10 +83,10 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
               aes(date, Dshort$hour_in_day, fill=Dshort$status)) + # Add tiles (heatmap)
     geom_point(data=Dsurvey,
                aes(x=Dsurvey$date, y=Dsurvey$hour_in_day_rise),
-               color = "black") +  # Add the line plot with risetime
+               color = as.character(coldic2["rise"])) +  # Add the line plot with risetime
     geom_point(data=Dsurvey,
                aes(x=Dsurvey$date, y=Dsurvey$hour_in_day_bed),
-               color = "purple") +  # Add the line plot with bedtime
+               color = as.character(coldic2["bed"])) +  # Add the line plot with bedtime
     xlab("") +
     ylab("Hour in day") +
     theme_bw() +
