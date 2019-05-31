@@ -79,6 +79,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         D$steps = D$steps_dd
         D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
         D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE)
+        D = D[,-which(colnames(D) %in% c("deepsleep_dd", "lightsleep_dd") == TRUE)]
         if ("withingsMove_pdk" %in% CDF) { #ignore pdk if direct download is available
           D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
         }
@@ -90,6 +91,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
           D$steps = D$steps_pdk
           D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
           D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE)
+          D = D[,-which(colnames(D) %in% c("deepsleep_pdk", "lightsleep_pdk") == TRUE)]
           if ("withingsMove_dd" %in% CDF) { #ignore dd if direct download is available
             D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
           }
@@ -134,7 +136,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       #----------------------------------------------------
       # Create new dataframe with only status and timestamps
       tmpmin = D[,c("time","status", "steps")]
-      
+      cat("\nstatus")
+      cat(table(D$status))
       # Untill here the data may include gaps in time.
       # We will now create continuous time series to ease plotting
       time.POSIX = as.POSIXlt(tmpmin$time,tz=desiredtz)
@@ -186,6 +189,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       statuszero = which(Dminute$status == 0)
       replacestatus = replacestatus[which(replacestatus %in% statuszero == TRUE)]
       if (length(replacestatus) > 0) Dminute$status[replacestatus] = -2 # sustained inactive
+      cat("\nDminute status")
+      cat(table(Dminutes$status))
       #========================================================
       #
       # NOTE: This is probably a good place to impute missing values, if we want to impute values...
