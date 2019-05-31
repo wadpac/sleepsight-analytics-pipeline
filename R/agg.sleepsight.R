@@ -70,27 +70,25 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       do.withings = FALSE
     } else {
       if ("withingsMove_dd" %in% CDF & withings.mode != "pdk" | 
-          (withings.mode == "pdk" & ("withingsMove_pdk" %in% CDF == FALSE))) {
+          (withings.mode == "pdk" & ("withingsMove_pdk" %in% CDF == FALSE))) { # use direct download
         D$withingsactive = D$withingsMove_dd
         D$steps = D$steps_dd
         D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
-        D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE) #D$awake_dd
+        D$withingsleep = rowSums(cbind(D$deepsleep_dd, D$lightsleep_dd),na.rm=TRUE)
         if ("withingsMove_pdk" %in% CDF) { #ignore pdk if direct download is available
           D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
         }
         withings.mode = "dd"
       } else {
-        if ("withingsMove_pdk" %in% CDF) {
+        if ("withingsMove_pdk" %in% CDF) { # use pdk
           D$withingsactive = D$withingsMove_pdk
           D$steps = D$steps_pdk
           D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
-          D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE) #, D$awake_pdk
+          D$withingsleep = rowSums(cbind(D$deepsleep_pdk, D$lightsleep_pdk),na.rm=TRUE)
           if ("withingsMove_dd" %in% CDF) { #ignore dd if direct download is available
             D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
           }
           withings.mode = "pdk"
-          # } else {
-          #   do.withings = FALSE
         }
       }
     }
