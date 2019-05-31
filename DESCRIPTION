@@ -1,7 +1,7 @@
 Package: Sleepsight
 Type: Package
 Title: Wearable Sensor and Survey Processing Pipeline
-Version: 0.0-6
+Version: 0.0-7
 Date: 2019-05-31
 Authors@R: c(person("Vincent T","van Hees",role=c("aut","cre"),
                   email="vincentvanhees@gmail.com"))
