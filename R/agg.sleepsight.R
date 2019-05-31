@@ -142,15 +142,22 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       # We will now create continuous time series to ease plotting
       time.POSIX = as.POSIXlt(tmpmin$time,tz=desiredtz)
       tmpmin$time.POSIX = time.POSIX
+      cat("\ntmpmin status")
+      cat(table(tmpmin$status))
       tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
       complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
       D_complete_time = data.frame(time_num=complete_time)
       tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time","time.POSIX") == TRUE))]
       Dminute = base::merge(D_complete_time,tmpmin,by="time_num",all = TRUE)
+      cat("\nDminute status A")
+      cat(table(Dminute$status))
+      
       missing_status = which(is.na(Dminute$status) == TRUE) # missing
       if (length(missing_status) > 0) Dminute$status[missing_status] = 5
       Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
       Dminute$date = as.Date(Dminute$time)
+      cat("\nDminute status B")
+      cat(table(Dminute$status))
       #========================================================
       # # Note: Day exclusion commented out for now
       # # Exclude days with more than minmisratio missing data
