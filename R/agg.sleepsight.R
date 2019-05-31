@@ -27,7 +27,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       }
       return(S)
     }
-    AddTimeToDF = function(df) {
+    AddTimeToDF = function(df, desiredtz) {
       df$time.POSIX = as.POSIXlt(df$time,tz=desiredtz,origin="1970-01-01")
       df$date = as.character(as.Date(df$time.POSIX))
       df$hour = df$time.POSIX$hour
@@ -209,10 +209,10 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         colnames(Dlong) = c("time", "status")
         colnames(Dlong2) = c("time", "steps")
         Dlong = merge(Dlong, Dlong2,by="time")
-        Dshort = AddTimeToDF(Dshort) 
+        Dshort = AddTimeToDF(Dshort, desiredtz) 
         DshortB = Dshort # used only for calculating D24HR
         Dshort = status2factor(Dshort) # used as output
-        Dlong = AddTimeToDF(Dlong)
+        Dlong = AddTimeToDF(Dlong, desiredtz)
         Dlong = status2factor(Dlong)
         #========================================================
         # Aggregate per day
