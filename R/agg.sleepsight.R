@@ -151,12 +151,15 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       Dminute = base::merge(D_complete_time,tmpmin,by="time_num",all = TRUE)
       cat("\nDminute status A")
       cat(table(Dminute$status))
-      
-      missing_status = which(is.na(Dminute$status) == TRUE) # missing
+      cat(class(Dminute$status))
+      missing_status = which(is.na(as.numeric(Dminute$status)) == TRUE) # missing
       if (length(missing_status) > 0) Dminute$status[missing_status] = 5
+      
+      cat("\nDminute status B")
+      cat(table(Dminute$status))
       Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
       Dminute$date = as.Date(Dminute$time)
-      cat("\nDminute status B")
+      cat("\nDminute status C")
       cat(table(Dminute$status))
       #========================================================
       # # Note: Day exclusion commented out for now
