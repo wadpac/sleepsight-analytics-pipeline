@@ -145,13 +145,19 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       
       cat(paste0("\nRange time: ",tmpmin$time[1],"---",tmpmin$time[length(tmpmin$time)]))
       # Q: Is this where time drops?
-      tmpmin$time.POSIX = as.POSIXlt(as.character(tmpmin$time), tz=desiredtz, origin = "1970-1-1")
+      cat("\nA")
+      print(tmpmin$tim[1:10])
+      cat("\nB")
+      tmpmin$time.POSIX = as.POSIXct(as.character(tmpmin$time), tz=desiredtz, origin = "1970-1-1")
+      
+      print(tmpmin$time.POSIX[1:10])
+      cat("\nC")
       cat("\ntmpmin status: ")
       cat(table(tmpmin$status))
-      cat(paste0("\nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
+      cat(paste0("\1. nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
       tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
       # Q: begin and end time are different?
-      cat(paste("\nRange time_num: ",min(tmpmin$time_num)," ",max(tmpmin$time_num)))
+      cat(paste("\n2. Range time_num: ",min(tmpmin$time_num)," ",max(tmpmin$time_num)))
       cat("\n-------------------")
       complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
       D_complete_time = data.frame(time_num=complete_time)
