@@ -138,7 +138,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       # tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
       tmpmin$time_num = as.numeric(as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1", format="%Y-%m-%d %H:%M:%OS"))
       # complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
-      D_complete_time = data.frame(time_num=seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60))
+      D_complete_time = data.frame(time_num=seq(min(tmpmin$time_num, na.rm = T),max(tmpmin$time_num, na.rm = T),by=60))
       
       print(as.POSIXlt(D_complete_time$time_num[1:3],tz=desiredtz,origin="1970-1-1"))
       print(as.POSIXlt(D_complete_time$time_num[nrow(D_complete_time)],tz=desiredtz,origin="1970-1-1"))
