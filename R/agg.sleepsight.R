@@ -79,7 +79,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
           D = D[,-which(colnames(D) %in% c("steps_pdk", "withingsMove_pdk") == TRUE)]
         }
         withings.mode = "dd"
-        cat("using direct download")
+        cat("\nusing direct download")
       } else {
         if ("withingsMove_pdk" %in% CDF) { # use pdk
           D$withingsactive = D$withingsMove_pdk
@@ -90,7 +90,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
             D = D[,-which(colnames(D) %in% c("steps_dd", "withingsMove_dd") == TRUE)]
           }
           withings.mode = "pdk"
-          cat("using pdk")
+          cat("\nusing pdk")
         }
       }
     }
