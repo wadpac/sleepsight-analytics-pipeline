@@ -144,16 +144,15 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       # We will now create continuous time series to ease plotting
       
       cat(paste0("\nRange time: ",tmpmin$time[1],"---",tmpmin$time[length(tmpmin$time)]))
-      
-      time.POSIX = as.POSIXlt(tmpmin$time,tz=desiredtz)
-      tmpmin$time.POSIX = time.POSIX
-      cat("\ntmpmin status")
+      # Q: Is this where time drops?
+      tmpmin$time.POSIX = as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1")
+      cat("\ntmpmin status: ")
       cat(table(tmpmin$status))
       cat(paste0("\nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
       tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
       # Q: begin and end time are different?
-      cat(paste0("\nRange time_num: ",range(tmpmin$time_num)))
-      
+      cat(paste("\nRange time_num: ",min(tmpmin$time_num)," ",max(tmpmin$time_num)))
+      cat("\n-------------------")
       complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
       D_complete_time = data.frame(time_num=complete_time)
       tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time","time.POSIX") == TRUE))]
