@@ -190,7 +190,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       replacestatus = replacestatus[which(replacestatus %in% statuszero == TRUE)]
       if (length(replacestatus) > 0) Dminute$status[replacestatus] = -2 # sustained inactive
       cat("\nDminute status")
-      cat(table(Dminutes$status))
+      cat(table(Dminute$status))
       #========================================================
       #
       # NOTE: This is probably a good place to impute missing values, if we want to impute values...
@@ -218,6 +218,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
           colnames(Dshort2) = c("time", "steps")
           Dshort = merge(Dshort, Dshort2,by="time")
         }
+        cat("\nDshort first 2 lines")
+        cat(Dshort[1:2,])
         Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
         Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
         colnames(Dlong) = c("time", "status")
