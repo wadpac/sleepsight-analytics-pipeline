@@ -219,7 +219,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
           Dshort = merge(Dshort, Dshort2,by="time")
         }
         cat("\nDshort first 2 lines")
-        cat(Dshort[1:2,])
+        print(Dshort[1:2,])
         Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
         Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
         colnames(Dlong) = c("time", "status")
