@@ -140,8 +140,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       # complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
       D_complete_time = data.frame(time_num=seq(min(tmpmin$time_num, na.rm = T),max(tmpmin$time_num, na.rm = T),by=60))
       
-      print(as.POSIXlt(D_complete_time$time_num[1:3],tz=desiredtz,origin="1970-1-1"))
-      print(as.POSIXlt(D_complete_time$time_num[nrow(D_complete_time)],tz=desiredtz,origin="1970-1-1"))
+      # print(as.POSIXlt(D_complete_time$time_num[1:3],tz=desiredtz,origin="1970-1-1"))
+      # print(as.POSIXlt(D_complete_time$time_num[nrow(D_complete_time)],tz=desiredtz,origin="1970-1-1"))
       # tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time","time.POSIX") == TRUE))]
       tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time") == TRUE))]
       Dminute = base::merge(D_complete_time,tmpmin,by="time_num",all = TRUE)
