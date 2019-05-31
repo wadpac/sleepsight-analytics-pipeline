@@ -65,7 +65,9 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
     # any data from this person.
     CDF = colnames(D)
     do.withings = TRUE
+    cat("\n")
     cat(CDF)
+    
     cat(paste0("\nCDF: ",CDF[which(CDF %in% c("steps_dd", "withingsMove_dd","steps_pdk", "withingsMove_pdk") == TRUE)]),collapse = "")
     if ("withingsMove_dd" %in% CDF == FALSE & "withingsMove_pdk" %in% CDF == FALSE) {
       do.withings = FALSE
@@ -96,7 +98,10 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         }
       }
     }
-    
+    cat(paste0("\ncolnames(D): ",colnames(D)))
+    cat("\n")
+    cat("\n",cat(summary(D$withingsleep)))
+    cat("\n")
     if (do.withings == TRUE) { # only process file if there is Withingsdata
       # Define status categories
       #-------------------------------------------------------
