@@ -146,15 +146,24 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       cat(paste0("\nRange time: ",tmpmin$time[1],"---",tmpmin$time[length(tmpmin$time)]))
       # Q: Is this where time drops?
       cat("\nA")
-      print(tmpmin$tim[1:10])
+      print(tmpmin$time[1:3])
+      cat("\n")
+      print(class(tmpmin$time))
       cat("\nB")
-      tmpmin$time.POSIX = as.POSIXct(as.character(tmpmin$time), tz=desiredtz, origin = "1970-1-1")
-      
-      print(tmpmin$time.POSIX[1:10])
+      time.POSIX = as.POSIXct(as.character(tmpmin$time), tz=desiredtz, origin = "1970-1-1")
+      print(time.POSIX[1:3])
+      cat("\n")
+      print(class(time.POSIX))
       cat("\nC")
+      tmpmin$time.POSIX = time.POSIX
+      print(tmpmin$time.POSIX[1:3])
+      cat("\n")
+      print(class(tmpmin$time.POSIX))
+      
+      cat("\nD")
       cat("\ntmpmin status: ")
       cat(table(tmpmin$status))
-      cat(paste0("\1. nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
+      cat(paste0("\n1. nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
       tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
       # Q: begin and end time are different?
       cat(paste("\n2. Range time_num: ",min(tmpmin$time_num)," ",max(tmpmin$time_num)))
