@@ -155,7 +155,16 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       cat(paste0("\n",length(tmpmin$time)))
       test = as.POSIXlt(tmpmin$time[1], tz=desiredtz, origin = "1970-1-1")
       cat(paste0("\n", test))
+      # Conclusion, single value is not the problem
+      # There must be a value in time that does not convert well to POSIX
       cat("\nBb")
+      
+      print(length(which(tmpmin$time == "NA")))
+      print(length(which(tmpmin$time == "")))
+      print(length(which(is.na(tmpmin$time) == TRUE)))
+      print(length(which(nchar(tmpmin$time) < 12)))
+      
+      cat("\nBc")
       time.POSIX = as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1")
       print(time.POSIX[1:3])
       cat("\n")
