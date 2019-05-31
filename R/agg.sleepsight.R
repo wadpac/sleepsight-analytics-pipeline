@@ -65,10 +65,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
     # any data from this person.
     CDF = colnames(D)
     do.withings = TRUE
-    cat("\n")
-    cat(CDF)
-    
-    cat(paste0("\nCDF: ",CDF[which(CDF %in% c("steps_dd", "withingsMove_dd","steps_pdk", "withingsMove_pdk") == TRUE)]),collapse = "")
+    # cat(paste0("\nCDF: ",CDF[which(CDF %in% c("steps_dd", "withingsMove_dd","steps_pdk", "withingsMove_pdk") == TRUE)]),collapse = "")
     if ("withingsMove_dd" %in% CDF == FALSE & "withingsMove_pdk" %in% CDF == FALSE) {
       do.withings = FALSE
     } else {
@@ -100,11 +97,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         }
       }
     }
-    cat(paste0("\ncolnames(D): ",colnames(D)))
-    cat("\n")
-    cat("\n",cat(summary(D$withingsleep)))
-    cat("\n")
-    cat(paste0("\nRange time in D: ",D$time[1],"---",D$time[length(D$time)]))
     
     if (do.withings == TRUE) { # only process file if there is Withingsdata
       # Define status categories
@@ -138,67 +130,26 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       #----------------------------------------------------
       # Create new dataframe with only status and timestamps
       tmpmin = D[,c("time","status", "steps")]
-      cat("\nstatus")
-      cat(table(D$status))
       # Untill here the data may include gaps in time.
       # We will now create continuous time series to ease plotting
       
-      cat(paste0("\nRange time: ",tmpmin$time[1],"---",tmpmin$time[length(tmpmin$time)]))
-      # Q: Is this where time drops?
-      cat("\nA")
-      print(tmpmin$time[1:3])
-      cat("\n")
-      print(class(tmpmin$time))
-      cat("\nB")
-      cat(paste0("\n",desiredtz))
-      cat(paste0("\n",tmpmin$time[1]))
-      cat(paste0("\n",length(tmpmin$time)))
-      test = as.POSIXlt(tmpmin$time[1], tz=desiredtz, origin = "1970-1-1")
-      cat(paste0("\n", test))
-      # Conclusion, single value is not the problem
-      # There must be a value in time that does not convert well to POSIX
-      cat("\nBb")
+      # time.POSIX = as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1")
+      # tmpmin$time.POSIX = time.POSIX
+      # tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
+      tmpmin$time_num = as.numeric(as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1"))
+      # complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
+      D_complete_time = data.frame(time_num=seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60))
       
-      print(length(which(tmpmin$time == "NA")))
-      print(length(which(tmpmin$time == "")))
-      print(length(which(is.na(tmpmin$time) == TRUE)))
-      print(length(which(nchar(tmpmin$time) < 12)))
-      
-      cat("\nBc")
-      time.POSIX = as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1")
-      print(time.POSIX[1:3])
-      cat("\n")
-      print(class(time.POSIX))
-      cat("\nC")
-      tmpmin$time.POSIX = time.POSIX
-      print(tmpmin$time.POSIX[1:3])
-      cat("\n")
-      print(class(tmpmin$time.POSIX))
-      
-      cat("\nD")
-      cat("\ntmpmin status: ")
-      cat(table(tmpmin$status))
-      cat(paste0("\n1. nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
-      tmpmin$time_num = as.numeric(tmpmin$time.POSIX)
-      # Q: begin and end time are different?
-      cat(paste("\n2. Range time_num: ",min(tmpmin$time_num)," ",max(tmpmin$time_num)))
-      cat("\n-------------------")
-      complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
-      D_complete_time = data.frame(time_num=complete_time)
-      tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time","time.POSIX") == TRUE))]
+      print(as.POSIXlt(D_complete_time$time_num[1:3],tz=desiredtz,origin="1970-1-1"))
+      print(as.POSIXlt(D_complete_time$time_num[nrow(D_complete_time)],tz=desiredtz,origin="1970-1-1"))
+      # tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time","time.POSIX") == TRUE))]
+      tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time") == TRUE))]
       Dminute = base::merge(D_complete_time,tmpmin,by="time_num",all = TRUE)
-      cat("\nDminute status A")
-      cat(table(Dminute$status))
-      cat(class(Dminute$status))
       missing_status = which(is.na(as.numeric(Dminute$status)) == TRUE) # missing
       if (length(missing_status) > 0) Dminute$status[missing_status] = 5
       
-      cat("\nDminute status B")
-      cat(table(Dminute$status))
       Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
       Dminute$date = as.Date(Dminute$time)
-      cat("\nDminute status C")
-      cat(table(Dminute$status))
       #========================================================
       # # Note: Day exclusion commented out for now
       # # Exclude days with more than minmisratio missing data
@@ -237,8 +188,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       statuszero = which(Dminute$status == 0)
       replacestatus = replacestatus[which(replacestatus %in% statuszero == TRUE)]
       if (length(replacestatus) > 0) Dminute$status[replacestatus] = -2 # sustained inactive
-      cat("\nDminute status")
-      cat(table(Dminute$status))
       #========================================================
       #
       # NOTE: This is probably a good place to impute missing values, if we want to impute values...
@@ -266,8 +215,6 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
           colnames(Dshort2) = c("time", "steps")
           Dshort = merge(Dshort, Dshort2,by="time")
         }
-        cat("\nDshort first 2 lines")
-        print(Dshort[1:2,])
         Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
         Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
         colnames(Dlong) = c("time", "status")
