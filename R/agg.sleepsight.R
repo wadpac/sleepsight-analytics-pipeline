@@ -145,7 +145,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       
       cat(paste0("\nRange time: ",tmpmin$time[1],"---",tmpmin$time[length(tmpmin$time)]))
       # Q: Is this where time drops?
-      tmpmin$time.POSIX = as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1")
+      tmpmin$time.POSIX = as.POSIXlt(as.character(tmpmin$time), tz=desiredtz, origin = "1970-1-1")
       cat("\ntmpmin status: ")
       cat(table(tmpmin$status))
       cat(paste0("\nRange time.POSIX: ",tmpmin$time.POSIX[1],"---",tmpmin$time.POSIX[length(tmpmin$time.POSIX)]))
