@@ -140,15 +140,15 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       # complete_time = seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60)
       D_complete_time = data.frame(time_num=seq(min(tmpmin$time_num),max(tmpmin$time_num),by=60))
       
-      print(as.POSIXlt(D_complete_time$time_num[1:3],tz=desiredtz,origin="1970-1-1"))
-      print(as.POSIXlt(D_complete_time$time_num[nrow(D_complete_time)],tz=desiredtz,origin="1970-1-1"))
+      print(as.POSIXlt(D_complete_time$time_num[1:3],tz=desiredtz,origin="1970-1-1", format="%Y-%m-%d %H:%M:%OS"))
+      print(as.POSIXlt(D_complete_time$time_num[nrow(D_complete_time)],tz=desiredtz,origin="1970-1-1", format="%Y-%m-%d %H:%M:%OS"))
       # tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time","time.POSIX") == TRUE))]
       tmpmin = tmpmin[,-c(which(colnames(tmpmin) %in% c("time") == TRUE))]
       Dminute = base::merge(D_complete_time,tmpmin,by="time_num",all = TRUE)
       missing_status = which(is.na(as.numeric(Dminute$status)) == TRUE) # missing
       if (length(missing_status) > 0) Dminute$status[missing_status] = 5
       
-      Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
+      Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz, format="%Y-%m-%d %H:%M:%OS")
       Dminute$date = as.Date(Dminute$time)
       #========================================================
       # # Note: Day exclusion commented out for now
