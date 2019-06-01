@@ -34,20 +34,13 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       if (length(x) == 0) {
         dat = y
       } else {
-        convertback = FALSE
-        cx = class(x$time)
-        cy = class(y$time)
-        if (length(cx) == length(cy) & length(cy) == 2) {
-          if (cx[1] != cy[1] | cx[2] != cy[2]) {
-            x$time = as.character(x$time)
-            y$time = as.character(y$time)
-            convertback = TRUE
-          }
-        }
+        # conversion from POSIX to character to POSIX takes time
+        # but not doing this seems to cause Windows/Linux consistency issues
+        # when merging the timestamps
+        x$time = as.character(x$time)
+        y$time = as.character(y$time)
         dat = merge(x, y, by="time", all = TRUE)
-        if (convertback == TRUE) {
-          dat$time = as.POSIXlt(dat$time,origin="1970-01-01",tz=desiredtz)
-        }
+        dat$time = as.POSIXlt(dat$time,origin="1970-01-01",tz=desiredtz, format="%Y-%m-%d %H:%M:%OS")
       }
       return(dat)
     }
@@ -206,8 +199,8 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       df = addToDF(df,survey,desiredtz)
     }
     # add hour in the day to ease plotting
-    df$hour = as.POSIXlt(df$time)$hour
-    df$min = as.POSIXlt(df$time)$min
+    df$hour = as.POSIXlt(df$time, tz = desiredtz, origin= "1970-1-1")$hour
+    df$min = as.POSIXlt(df$time, tz = desiredtz, origin= "1970-1-1")$min
     df$min_inday = df$hour * 60 + df$min
     clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
     df= df[!duplicated(df),] # remove double entries
