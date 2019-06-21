@@ -4,7 +4,8 @@
 \alias{preprocess}
 \title{preprocess}
 \usage{
-preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder)
+preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder,
+  ignore.light = TRUE)
 }
 \arguments{
 \item{personfolder}{folder in which we expect all the pdk and Withings output folder.}
@@ -14,6 +15,8 @@ preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder)
 \item{overwrite}{boolean if TRUE then it will reload all the data (default FALSE).}
 
 \item{outputfolder}{the name of the RData file where all extracted data is stored.}
+
+\item{ignore.light}{Boolean whether to ignore the light data}
 }
 \value{
 outputfolder the name of the RData file where all extracted data is stored.

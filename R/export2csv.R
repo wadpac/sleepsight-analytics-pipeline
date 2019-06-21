@@ -4,10 +4,13 @@
 #' @param csvfile file name where data overview needs to be stored
 #' @param desiredtz timezone (character) in Europe/London format
 #' @param overwrite.preprocess2csv whether to overwrite existing csvfile
+#' @param startDate Character,  optional argument to specify the startDate of the recording, e.g. 2019-01-01
+#' @param endDate Character, optional argument to specify the startDate of the recording, e.g. 2019-01-01
 #' @return no output, just a file is stored
 #' @export
 #' @importFrom utils write.csv
-export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv) {
+export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv,
+                      startDate = c(), endDate = c()) {
   if (!file.exists(csvfile) | overwrite.preprocess2csv == TRUE) {
     cat("\n* Export to csv")
     # to avoid warning "no visible binding for global variable " by R CMD check
@@ -204,7 +207,16 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
     df$min_inday = df$hour * 60 + df$min
     clock_char = strftime(df$time,format="%H:%M:%S",tz=desiredtz)
     df= df[!duplicated(df),] # remove double entries
+    if (length(startDate) > 0 & length(endDate) > 0) {
+      startDateNum = as.numeric(as.Date(startDate)) * 3600*24
+      endDateNum = as.numeric(as.Date(endDate)) * 3600*24
+      timeNum = as.numeric(df$time)
+      validdates = which(timeNum > startDateNum & timeNum < endDateNum)
+      if (length(validdates) != 0) df = df[validdates,]
+    }
     df$time = as.POSIXlt(df$time,origin="1970-01-01",tz=desiredtz)
+    
+
     write.csv(df,file=csvfile,row.names = FALSE)
   }
 }

@@ -42,7 +42,8 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
     Dshort$status[which(Dshort$status %in% c("sustained inactive","sleep") == TRUE)] = "inactive"
   }
   dates_on_x_axis = unique(Dshort$date)
-  dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),15)]
+  
+  dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),round(length(dates_on_x_axis) / 25))]
   Dshort$date = as.Date(Dshort$date)
   
   # Add clock times to Dsurvey for risetime
@@ -128,7 +129,7 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
   
   # Heatmap of steps
   dates_on_x_axis = unique(Dlong$date)
-  dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),15)]
+  dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),round(length(dates_on_x_axis) / 25))]
   Dlong$date = as.Date(Dlong$date)
   Dlong = addDoublePlot(Dlong)
   Dlong$steps = as.numeric(Dlong$steps)

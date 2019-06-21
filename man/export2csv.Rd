@@ -4,7 +4,8 @@
 \alias{export2csv}
 \title{export2csv}
 \usage{
-export2csv(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv)
+export2csv(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv,
+  startDate = c(), endDate = c())
 }
 \arguments{
 \item{outputfolder}{RData datafile where the output of preprocess is stored.}
@@ -14,6 +15,10 @@ export2csv(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv)
 \item{desiredtz}{timezone (character) in Europe/London format}
 
 \item{overwrite.preprocess2csv}{whether to overwrite existing csvfile}
+
+\item{startDate}{Character,  optional argument to specify the startDate of the recording, e.g. 2019-01-01}
+
+\item{endDate}{Character, optional argument to specify the startDate of the recording, e.g. 2019-01-01}
 }
 \value{
 no output, just a file is stored

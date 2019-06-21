@@ -4,9 +4,11 @@
 #' @param desiredtz timezone (character) in Europe/London format
 #' @param overwrite boolean if TRUE then it will reload all the data (default FALSE).
 #' @param outputfolder the name of the RData file where all extracted data is stored.
+#' @param ignore.light Boolean whether to ignore the light data
 #' @return outputfolder the name of the RData file where all extracted data is stored.
 #' @export
-preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
+preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder,
+                      ignore.light = TRUE) {
   cat("\n* Preprocess")
   channelfolders = c(list.dirs(paste0(personfolder,"/Phone_sensors"), recursive=FALSE),
                      list.dirs(paste0(personfolder,"/Sleep_diary"), recursive=FALSE))
@@ -163,7 +165,7 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder) {
         save(PhoneAcc,file=fullpathout)
       }
     }
-    if (paste0(personfolder,"/Phone_sensors/pdk-sensor-light") %in% channelfolders) {
+    if (paste0(personfolder,"/Phone_sensors/pdk-sensor-light") %in% channelfolders & ignore.light == FALSE) {
       # Light probably not useful, because light can change without the person change activity state
       filefolder = paste0(personfolder,"/Phone_sensors/pdk-sensor-light/")
       fullpathout = paste0(outputfolder,"/lightOnTimes.RData")
