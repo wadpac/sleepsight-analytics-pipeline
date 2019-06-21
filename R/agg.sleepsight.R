@@ -122,7 +122,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       D$status[active] = 1 # any movement (phone app activity is not sufficient, only phone movement or Withings activity counts)
       #----------------------------------------------------
       # INCONCLUSIVE
-      inconclusive = which(is.na(D$lighton) == TRUE & is.na(D$screenon) == TRUE &
+      inconclusive = which(is.na(D$screenon) == TRUE & #is.na(D$lighton) == TRUE & 
                              is.na(D$GPSmove) == TRUE & is.na(D$AppAct == TRUE) &
                              is.na(D$batinteract == TRUE) & is.na(D$phoneacc) == TRUE &
                              is.na(D$AppHalted) == TRUE & is.na(D$withingsactive) == TRUE & is.na(D$withingsleep) == TRUE)
