@@ -10,7 +10,7 @@ if(length(new.packages)) install.packages(new.packages)
 
 # library(devtools)
 # install_github("wadpac/sleepsight-analytics-pipeline")
-# library(Sleepsight)
+library(Sleepsight)
 library(data.table)
 library(ggplot2)
 library(gridExtra)
