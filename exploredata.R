@@ -1,8 +1,8 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
 # graphics.off()
-setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
-roxygen2::roxygenise()
+# setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
+# roxygen2::roxygenise()
 
 list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64", "gridExtra", "ggplot2", "cowplot")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -18,7 +18,7 @@ library(gridExtra)
 # Input arguments for this script:
 
 overwrite.preprocess = FALSE # whether to overwrite previously generated preprocessing output with this R code.
-overwrite.preprocess2csv = FALSE
+overwrite.preprocess2csv = TRUE
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 simplify.behavioralclasses = FALSE
@@ -31,16 +31,42 @@ desiredtz = "Europe/London"
 studyfolder = "/media/vincent/sleepsight"
 outputfolder = "/media/vincent/sleepsight/results"
 
-dateRange = c("01","2016-02-01","2020-01-01",
-              "02","2016-02-01","2020-01-01",
-              "03","2016-02-01","2020-01-01",
-              "04","2016-02-01","2020-01-01",
-              "05","2016-02-01","2020-01-01",
-              "06","2016-02-01","2020-01-01",
-              "07","2016-02-01","2020-01-01",
-              "08","2018-02-01","2018-06-01",
-              "10","2016-02-01","2020-01-01",
-              "15","2017-01-01","2019-01-01")
+dateRange = c("01","2017-08-15","2018-08-14",
+              "02","2017-08-18","2018-08-23",
+              "03","2017-09-06","2018-09-05",
+              "04","2017-09-08","2018-09-07",
+              "05","2017-09-14","2018-03-30",
+              "06","2017-09-25","2018-09-24",
+              "07","2017-10-05","2018-06-30",
+              "08","2017-09-17","2019-05-18",
+              "09","2017-10-17","2018-10-23",
+              "10","2017-11-02","2018-11-01",
+              "11","2017-11-07","2018-11-06",
+              "12","2017-11-10","2017-12-22",
+              "13","2017-12-06","2018-12-05",
+              "14","2017-12-08","2018-12-07",
+              "15","2017-12-08","2019-02-01",
+              "16","2018-01-22","2019-01-21",
+              "17","2018-02-08","2019-04-18",
+              "18","2018-03-06","2019-03-05",
+              "19","2018-03-20","2019-05-05",
+              "20","2018-03-28","2018-05-11",
+              "21","2018-03-29","2019-02-01",
+              "22","2018-04-18","2019-04-17",
+              "23","2018-04-27","2019-04-26",
+              "24","2018-05-15","2019-05-14",
+              "25","2018-05-30","2019-05-29",
+              "26","2018-06-07","2019-06-07",
+              "27","2018-06-28","2019-06-20",
+              "28","2018-07-12","2019-06-20",
+              "29","2018-07-25","2019-06-20",
+              "30","2018-03-01","2018-11-01",
+              "31","2018-08-15","2019-06-20",
+              "32","2018-08-21","2019-06-20",
+              "33","2018-09-12","2019-06-20",
+              "34","2018-10-17","2019-06-20",
+              "35","2019-02-13","2019-06-20",
+              "36","2019-02-27","2019-06-20")
 
 #==============================================================
 # Create essential output folders
@@ -70,7 +96,7 @@ if (length(foldersInStudyFolder) == 0) stop(paste0("\nNo folders found inside ",
 dateRange = as.data.frame(matrix(dateRange,ncol = 3,byrow = TRUE))
 colnames(dateRange) = c("id","startDate","endDate")
 
-# foldersInStudyFolder = c("/media/vincent/sleepsight/SS08")
+# foldersInStudyFolder = c("/media/vincent/sleepsight/SS05")
 # ,    "/media/vincent/sleepsight/SS25") #c("/media/vincent/sleepsight/SS08","/media/vincent/sleepsight/SS14")
 
 for (personfolder in foldersInStudyFolder) {
@@ -91,7 +117,7 @@ for (personfolder in foldersInStudyFolder) {
   timeseriesfile = paste0(timeseriesfolder,"/timeserie_",personID,".png")
   startDate = c(); endDate = c()
   if (personID %in% dateRange$id) {
-    dateRange_rownr = which(personID %in% dateRange$id)
+    dateRange_rownr = which(dateRange$id %in% personID)
     startDate = dateRange$startDate[dateRange_rownr]
     endDate = dateRange$endDate[dateRange_rownr]
   }
