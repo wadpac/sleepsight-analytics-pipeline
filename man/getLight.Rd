@@ -4,12 +4,14 @@
 \alias{getLight}
 \title{getLight}
 \usage{
-getLight(filefolder, desiredtz)
+getLight(filefolder, desiredtz, lightThreshold = 10)
 }
 \arguments{
 \item{filefolder}{path to folder pdk-sensor-light with Phone light sensor files (txt).}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
+
+\item{lightThreshold}{Threshold for light value above which light is stored}
 }
 \value{
 timestamps (POSIX) on which the light was on.

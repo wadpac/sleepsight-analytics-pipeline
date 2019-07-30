@@ -2,11 +2,12 @@
 #'
 #' @param filefolder path to folder pdk-sensor-light with Phone light sensor files (txt).
 #' @param desiredtz timezone (character) in Europe/London format
+#' @param lightThreshold Threshold for light value above which light is stored
 #' @return timestamps (POSIX) on which the light was on.
 #' @export
 #' @importFrom stats aggregate
 
-getLight = function(filefolder, desiredtz) {
+getLight = function(filefolder, desiredtz, lightThreshold=10) {
   fn_light = dir(filefolder)
   lightstore = c()
   LFN = length(fn_light)
@@ -52,10 +53,10 @@ getLight = function(filefolder, desiredtz) {
   # Note: Across a year light can have multiple values per second. Is this related to double entries with DST? => Investigate
   NR = nrow(light)
   light$Light.binary = rep(0,NR)
-  lightOn = which(light$Light.Level > 10)
+  lightOn = which(light$Light.Level >= lightThreshold)
   light$Light.binary[lightOn] = 1
-  # x11() # Create plot to QC event detection
-  # plot(light$Created.Date.POSIX,light$Light.Level,type="l",ylab="screen on")
   lightOnTimes = light$Normalized.Timestamp.POSIX[lightOn]
-  return(lightOnTimes)
+  lightLevel= light$Light.Level[lightOn]
+  rm(light)
+  invisible(list(lightOnTimes=lightOnTimes,lightLevel=lightLevel))
 }

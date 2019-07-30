@@ -5,10 +5,11 @@
 #' @param overwrite boolean if TRUE then it will reload all the data (default FALSE).
 #' @param outputfolder the name of the RData file where all extracted data is stored.
 #' @param ignore.light Boolean whether to ignore the light data
+#' @param lightThreshold Threshold for light value above which light is stored
 #' @return outputfolder the name of the RData file where all extracted data is stored.
 #' @export
 preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder,
-                      ignore.light = TRUE) {
+                      ignore.light = TRUE, lightThreshold=10) {
   cat("\n* Preprocess")
   channelfolders = c(list.dirs(paste0(personfolder,"/Phone_sensors"), recursive=FALSE),
                      list.dirs(paste0(personfolder,"/Sleep_diary"), recursive=FALSE))
@@ -171,8 +172,10 @@ preprocess = function(personfolder,desiredtz,overwrite=FALSE, outputfolder,
       fullpathout = paste0(outputfolder,"/lightOnTimes.RData")
       if (!file.exists(fullpathout) | overwrite == TRUE) { # only load data if file does not exist yet
         cat("\npdk-sensor-light")
-        lightOnTimes = getLight(filefolder, desiredtz)
-        save(lightOnTimes,file=fullpathout)
+        light = getLight(filefolder, desiredtz,lightThreshold=lightThreshold)
+        lightOnTimes = light$lightOnTimes
+        lightLevel = light$lightLevel
+        save(lightOnTimes,lightLevel,file=fullpathout)
       }
     }
     if (paste0(personfolder,"/Phone_sensors/pdk-foreground-application") %in% channelfolders) {

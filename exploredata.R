@@ -8,8 +8,14 @@ list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
-# library(devtools)
-# install_github("wadpac/sleepsight-analytics-pipeline")
+
+# ffnames = dir("/home/vincent/sleepsight-analytics-pipeline/R") # creating list of filenames of scriptfiles to load
+# for (i in 1:length(ffnames)) {
+#   source(paste("/home/vincent/sleepsight-analytics-pipeline/R/",ffnames[i],sep="")) #loading scripts for reading geneactiv data
+# }
+
+library(devtools)
+install_github("wadpac/sleepsight-analytics-pipeline")
 library(Sleepsight)
 library(data.table)
 library(ggplot2)
@@ -17,14 +23,14 @@ library(gridExtra)
 #==============================================================
 # Input arguments for this script:
 
-overwrite.preprocess = FALSE # whether to overwrite previously generated preprocessing output with this R code.
+overwrite.preprocess = TRUE # whether to overwrite previously generated preprocessing output with this R code.
 overwrite.preprocess2csv = TRUE
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
-simplify.behavioralclasses = FALSE
+simplify.behavioralclasses = TRUE
 
 withings.mode = "dd" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
-
+lightThreshold = 10 # Light value above which light is stored, otherwise code assumes no light.
 desiredtz = "Europe/London"
 
 # Note: see README for expected folder structure!
@@ -108,7 +114,7 @@ for (personfolder in foldersInStudyFolder) {
   
   # preproces the data
   preproDataPerID = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite.preprocess,
-                               outputfolder=outputfolder, ignore.light = TRUE)
+                               outputfolder=outputfolder, ignore.light = FALSE, lightThreshold = lightThreshold)
   # extract ID and specify desired name of output csv and png files
   personID = unlist(strsplit(preproDataPerID,"/preproces/SS"))[2]
   if (length(personID) == 0) warning(paste0("\nParticipant specific folder does not have SS in name"))

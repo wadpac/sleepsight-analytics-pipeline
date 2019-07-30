@@ -47,15 +47,21 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       }
       return(dat)
     }
-    
     #------------------------------------------------------------------------
     # standardise time resolution (1 minute)
     # and merge all channels in one data.frame df
     df = c()
     if ("lightOnTimes" %in% ls()) {
-      lightOnTimes = aggregatePerMinute(lightOnTimes, desiredtz) # from 5 to 60 seconds
-      lightOn = data.frame(time = lightOnTimes,lighton=TRUE)
-      df = addToDF(df,lightOn, desiredtz)
+      time_num = round(as.numeric(lightOnTimes)/60) * 60 # needed for aggregating the lightLevel further down
+      # aggregate to minute level
+      lightdf = data.frame(time_num = time_num, lightLevel = lightLevel)
+      lightdf_min = aggregate(lightdf, by = list(lightdf$time_num),FUN = mean)
+      # tidy up data.frame to enable merging to df
+      lightdf_min$time = as.character(as.POSIXlt(lightdf_min$time_num, origin="1970-1-1", tz= desiredtz))
+      lightdf_min = lightdf_min[,c("time","lightLevel")]
+      lightdf_min$lightLevel = as.integer(round(lightdf_min$lightLevel))
+      lightdf_min$lighton = TRUE
+      df = addToDF(df,lightdf_min, desiredtz)
     }
     if ("ScreenOnTimes" %in% ls()) {
       ScreenOnTimes = aggregatePerMinute(ScreenOnTimes, desiredtz) # from 1 to 60 seconds

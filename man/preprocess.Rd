@@ -5,7 +5,7 @@
 \title{preprocess}
 \usage{
 preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder,
-  ignore.light = TRUE)
+  ignore.light = TRUE, lightThreshold = 10)
 }
 \arguments{
 \item{personfolder}{folder in which we expect all the pdk and Withings output folder.}
@@ -17,6 +17,8 @@ preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder,
 \item{outputfolder}{the name of the RData file where all extracted data is stored.}
 
 \item{ignore.light}{Boolean whether to ignore the light data}
+
+\item{lightThreshold}{Threshold for light value above which light is stored}
 }
 \value{
 outputfolder the name of the RData file where all extracted data is stored.
