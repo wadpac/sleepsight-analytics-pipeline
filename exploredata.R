@@ -31,6 +31,7 @@ simplify.behavioralclasses = TRUE
 
 withings.mode = "dd" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
 lightThreshold = 10 # Light value above which light is stored, and below which we assume darkness
+ignore.light = FALSE
 desiredtz = "Europe/London"
 
 # Note: see README for expected folder structure!
@@ -114,7 +115,7 @@ for (personfolder in foldersInStudyFolder) {
   
   # preproces the data
   preproDataPerID = preprocess(personfolder,desiredtz = desiredtz, overwrite=overwrite.preprocess,
-                               outputfolder=outputfolder, ignore.light = FALSE, lightThreshold = lightThreshold)
+                               outputfolder=outputfolder, ignore.light = ignore.light, lightThreshold = lightThreshold)
   # extract ID and specify desired name of output csv and png files
   personID = unlist(strsplit(preproDataPerID,"/preproces/SS"))[2]
   if (length(personID) == 0) warning(paste0("\nParticipant specific folder does not have SS in name"))
