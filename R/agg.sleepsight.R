@@ -39,6 +39,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
     AddTimeToDF = function(df, desiredtz) {
       df$time.POSIX = as.POSIXlt(df$time,tz=desiredtz,origin="1970-01-01")
       df$date = as.character(as.Date(df$time.POSIX))
+      df$date_12HrShiftBack = as.character(as.Date(df$time.POSIX - (12*3600)))
       df$hour = df$time.POSIX$hour
       df$min = df$time.POSIX$min
       df$hour_in_day = df$hour + (df$min/60)
@@ -204,10 +205,13 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         #========================================================
         # Aggregate per day
         NSinH = 60 / shortwindow #number of shortwindows (length in minuntes) in an hours
+        sleepdur_pernight = aggregate(x = DshortB$status,by = list(date = DshortB$date_12HrShiftBack),FUN = function(x) length(which(x==-1)))
+        sleepdur_pernight = mydivfun(sleepdur_pernight,dn=NSinH) # convert x-5-minute window of a day into hour
+        colnames(sleepdur_pernight) = c("date","sleepdur_night") # duration expressed in minutes
         
         sleepdur_perday = aggregate(x = DshortB$status,by = list(date = DshortB$date),FUN = function(x) length(which(x==-1)))
         sleepdur_perday = mydivfun(sleepdur_perday,dn=NSinH) # convert x-5-minute window of a day into hour
-        colnames(sleepdur_perday) = c("date","sleepdur") # duration expressed in minutes
+        colnames(sleepdur_perday) = c("date","sleepdur_day") # duration expressed in minutes
         
         susindur_perday = aggregate(x = DshortB$status,by = list(date = DshortB$date),FUN = function(x) length(which(x==-2)))
         susindur_perday = mydivfun(susindur_perday,dn=NSinH) # convert x-5-minute window of a day into hour
@@ -249,6 +253,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         D24HR = merge(D24HR,steps_perday,by="date")
         D24HR = merge(D24HR,lightExposureDur_perday,by="date")
         D24HR = merge(D24HR,lightExposureMean_perday,by="date")
+        D24HR = merge(D24HR,sleepdur_pernight,by="date")
         
         #--------------------------------------------------------
         # Calculate other summary statistics:

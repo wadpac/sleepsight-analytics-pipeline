@@ -30,7 +30,7 @@ do.plot = TRUE # whether to create a simple histogram of available data and writ
 simplify.behavioralclasses = TRUE
 
 withings.mode = "dd" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
-lightThreshold = 10 # Light value above which light is stored, otherwise code assumes no light.
+lightThreshold = 10 # Light value above which light is stored, and below which we assume darkness
 desiredtz = "Europe/London"
 
 # Note: see README for expected folder structure!
