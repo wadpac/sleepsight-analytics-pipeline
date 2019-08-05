@@ -27,6 +27,7 @@ agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
 }
 \value{
 List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey.
+Note that sleepdur_night starts at noon and continous to the noon on the following day.
 }
 \description{
 agg.sleepsight

@@ -8,7 +8,8 @@
 #' @param shortwindow short window length in minutes to aggregate to
 #' @param longwindow long window length in minutes to aggregate to
 #' @param withings.mode character ("pdk", "dd") to indicate whether to prioritise pdk or dd
-#' @return List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey.
+#' @return List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey. 
+#' Note that sleepdur_night starts at noon and continous to the noon on the following day.
 #' @export
 agg.sleepsight = function(aggregatefile, csvfile, surveyfile, 
                           desiredtz, minmisratio=1/3, shortwindow = 1, longwindow = 30,
