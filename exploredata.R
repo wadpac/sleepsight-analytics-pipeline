@@ -4,30 +4,16 @@ rm(list=ls())
 # setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
 # roxygen2::roxygenise()
 
-list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64", "gridExtra", "ggplot2", "cowplot")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
-
-
-# ffnames = dir("/home/vincent/sleepsight-analytics-pipeline/R") # creating list of filenames of scriptfiles to load
-# for (i in 1:length(ffnames)) {
-#   source(paste("/home/vincent/sleepsight-analytics-pipeline/R/",ffnames[i],sep="")) #loading scripts for reading geneactiv data
-# }
-
-library(devtools)
-install_github("wadpac/sleepsight-analytics-pipeline")
-library(Sleepsight)
-library(data.table)
-library(ggplot2)
-library(gridExtra)
 #==============================================================
 # Input arguments for this script:
+development.mode = FALSE # Set to FALSE if you are using this script
 
-overwrite.preprocess = TRUE # whether to overwrite previously generated preprocessing output with this R code.
-overwrite.preprocess2csv = TRUE
+overwrite.preprocess = FALSE # whether to overwrite previously generated preprocessing output with this R code.
+overwrite.preprocess2csv = FALSE
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
-simplify.behavioralclasses = TRUE
+
+simplify.behavioralclasses = FALSE # set to FALSE otherwise inactivity and sleep arge merged into one class
 
 withings.mode = "dd" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
 lightThreshold = 10 # Light value above which light is stored, and below which we assume darkness
@@ -76,6 +62,24 @@ dateRange = c("01","2017-08-15","2018-08-14",
               "36","2019-02-27","2019-06-20")
 
 #==============================================================
+if (development.mode == FALSE) {
+  list.of.packages <- c("devtools", "data.table","roxygen2", "zoo", "pracma", "bit64", "gridExtra", "ggplot2", "cowplot")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install.packages(new.packages)
+  library(devtools)
+  install_github("wadpac/sleepsight-analytics-pipeline")
+  library(Sleepsight)
+} else {
+  roxygen2::roxygenise()
+  ffnames = dir("/home/vincent/sleepsight-analytics-pipeline/R") # creating list of filenames of scriptfiles to load
+  for (i in 1:length(ffnames)) {
+    source(paste("/home/vincent/sleepsight-analytics-pipeline/R/",ffnames[i],sep="")) #loading scripts for reading geneactiv data
+  }
+}
+library(data.table)
+library(ggplot2)
+library(gridExtra)
+
 # Create essential output folders
 
 if (!dir.exists(outputfolder)) dir.create(outputfolder)
