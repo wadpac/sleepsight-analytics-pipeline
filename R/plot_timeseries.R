@@ -11,7 +11,7 @@ plot_timeseries = function(D24HR, Dsurvey, timeseriesfile) {
   par(mfrow=c(5,2),bty="l",pch=20)
   XL = "day"
   YLIM = c(0,24)
-  plot(D24HR$sleepdur,type="p",main="sleep (hours)",xlab=XL, ylab="",ylim=YLIM)
+  plot(D24HR$sleepdur_night,type="p",main="sleep (hours)",xlab=XL, ylab="",ylim=YLIM)
   plot(D24HR$susindur,type="p",main= "sustained inactivity (hours)",xlab=XL, ylab="",ylim=YLIM)
   plot(D24HR$inactivedur,type="p",main= "inactive (hours)",xlab=XL, ylab="",ylim=YLIM)
   plot(D24HR$activedur,type="p",main = "active (hours)",xlab=XL, ylab="",ylim=YLIM)
