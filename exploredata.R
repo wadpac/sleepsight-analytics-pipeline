@@ -1,9 +1,5 @@
 # By: Vincent van Hees 2019
 rm(list=ls())
-# graphics.off()
-# setwd("/home/vincent/sleepsight-analytics-pipeline") # only needed for roxygen2 command on next line
-# roxygen2::roxygenise()
-
 #==============================================================
 # Input arguments for this script:
 development.mode = FALSE # Set to FALSE if you are using this script
