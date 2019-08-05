@@ -237,10 +237,8 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         lightExposureDur_perday = mydivfun(lightExposureDur_perday,dn=NSinH)
         colnames(lightExposureDur_perday) = c("date","lightExposureDur_perday")
         
-        lightExposureMean_perday = aggregate(x = DshortB$lightLevel,by = list(date = DshortB$date),FUN = mean)
-        lightExposureMean_perday = mydivfun(lightExposureMean_perday,dn=NSinH)
+        lightExposureMean_perday = aggregate(x = DshortB$lightLevel,by = list(date = DshortB$date),mymean)
         colnames(lightExposureMean_perday) = c("date","lightExposureMean_perday")
-        
         
         steps_perday = aggregate(x = DshortB$steps,by = list(date = DshortB$date),FUN = mysum)
         # Note: not dividing by number of short windows in a hours, because we want this to be the sum
