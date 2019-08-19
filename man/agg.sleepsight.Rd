@@ -6,7 +6,7 @@
 \usage{
 agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
   minmisratio = 1/3, shortwindow = 1, longwindow = 30,
-  withings.mode = "dd")
+  withings.mode = "dd", startDate = c(), endDate = c())
 }
 \arguments{
 \item{aggregatefile}{RData file where the output of aggregation will be stored.}
@@ -24,6 +24,10 @@ agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
 \item{longwindow}{long window length in minutes to aggregate to}
 
 \item{withings.mode}{character ("pdk", "dd") to indicate whether to prioritise pdk or dd}
+
+\item{startDate}{Character,  optional argument to specify the startDate of the recording, e.g. 2019-01-01}
+
+\item{endDate}{Character, optional argument to specify the startDate of the recording, e.g. 2019-01-01}
 }
 \value{
 List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey.

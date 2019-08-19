@@ -6,6 +6,16 @@
 #' @return no output, just a file is stored
 #' @export
 plot_timeseries = function(D24HR, Dsurvey, timeseriesfile) {
+  if (length(startDate) > 0 & length(endDate) > 0) {
+    startDateNum = as.numeric(as.Date(startDate)) * 3600*24
+    endDateNum = as.numeric(as.Date(endDate)) * 3600*24
+    timeNumLong = as.numeric(as.POSIXlt(D24HR$date,"1970-01-01",tz=desiredtz))
+    timeNumShort = as.numeric(as.POSIXlt(Dshort$time,"1970-01-01",tz=desiredtz))
+    validdatesLong = which(timeNumLong > startDateNum & timeNumLong < endDateNum)
+    validdatesShort = which(timeNumShort > startDateNum & timeNumShort < endDateNum)
+    if (length(validdatesLong) != 0) Dlong = Dlong[validdatesLong,]
+    if (length(validdatesShort) != 0) Dshort = Dshort[validdatesShort,]
+  }
   cat("\n* plot timeseries")
   png(filename = timeseriesfile,width = 12,height = 10,units = "in",res = 400)
   par(mfrow=c(5,2),bty="l",pch=20)

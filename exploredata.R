@@ -4,16 +4,16 @@ rm(list=ls())
 # Input arguments for this script:
 development.mode = FALSE # Set to FALSE if you are using this script
 
-overwrite.preprocess = FALSE # whether to overwrite previously generated preprocessing output with this R code.
-overwrite.preprocess2csv = FALSE
+overwrite.preprocess = TRUE # whether to overwrite previously generated preprocessing output with this R code.
+overwrite.preprocess2csv = TRUE
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 
-simplify.behavioralclasses = FALSE # set to FALSE otherwise inactivity and sleep arge merged into one class
+simplify.behavioralclasses = FALSE # set to FALSE otherwise inactivity and sleep arge merged into one class, which we explore earlier
 
-withings.mode = "dd" # Either "pdk" or "dd" to indicate whether to prioritise pdk or dd
+withings.mode = "dd" # Either "pdk" or "dd" to indicate which data source for Withings data to prioritise pdk or dd
 lightThreshold = 10 # Light value above which light is stored, and below which we assume darkness
-ignore.light = FALSE
+ignore.light = FALSE #Note: If light is not available the code will ignore it either way.
 desiredtz = "Europe/London"
 
 # Note: see README for expected folder structure!
@@ -67,9 +67,10 @@ if (development.mode == FALSE) {
   library(Sleepsight)
 } else {
   roxygen2::roxygenise()
-  ffnames = dir("/home/vincent/sleepsight-analytics-pipeline/R") # creating list of filenames of scriptfiles to load
+  locationRcode = "/home/vincent/sleepsight-analytics-pipeline/R" 
+  ffnames = dir(locationRcode) # creating list of filenames of scriptfiles to load
   for (i in 1:length(ffnames)) {
-    source(paste("/home/vincent/sleepsight-analytics-pipeline/R/",ffnames[i],sep="")) #loading scripts for reading geneactiv data
+    source(paste(locationRcode,"/",ffnames[i],sep="")) #loading scripts for reading geneactiv data
   }
 }
 library(data.table)
@@ -105,7 +106,7 @@ colnames(dateRange) = c("id","startDate","endDate")
 
 # foldersInStudyFolder = c("/media/vincent/sleepsight/SS05")
 # ,    "/media/vincent/sleepsight/SS25") #c("/media/vincent/sleepsight/SS08","/media/vincent/sleepsight/SS14")
-
+foldersInStudyFolder = c("/media/vincent/sleepsight/SS01")
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
@@ -144,7 +145,7 @@ for (personfolder in foldersInStudyFolder) {
     cat("\n* Aggregate data per: day, 30 minutes, and 1 minute")
     out = agg.sleepsight(aggregatefile = aggregatefile, csvfile = csvfile, surveyfile = surveyfile, desiredtz = desiredtz, 
                          minmisratio = 1/3, shortwindow = 1, longwindow = 30,
-                         withings.mode = withings.mode)
+                         withings.mode = withings.mode, startDate = startDate, endDate = endDate)
     D24HR = out$D24HR
     Dshort = out$Dshort # 1 minute
     Dlong = out$Dlong # 30 minutes
@@ -176,7 +177,7 @@ for (personfolder in foldersInStudyFolder) {
     
     # heatmaps of status and steps
     heatmaps(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, 
-             simplify.behavioralclasses, Dsurvey)
+             simplify.behavioralclasses, Dsurvey, startDate, endDate, desiredtz)
     # time series
     plot_timeseries(D24HR, Dsurvey, timeseriesfile)
   }

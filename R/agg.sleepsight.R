@@ -8,12 +8,14 @@
 #' @param shortwindow short window length in minutes to aggregate to
 #' @param longwindow long window length in minutes to aggregate to
 #' @param withings.mode character ("pdk", "dd") to indicate whether to prioritise pdk or dd
+#' @param startDate Character,  optional argument to specify the startDate of the recording, e.g. 2019-01-01
+#' @param endDate Character, optional argument to specify the startDate of the recording, e.g. 2019-01-01
 #' @return List with data frames that hold the aggregated data: D24HR, Dshort, Dlong, and Dsurvey. 
 #' Note that sleepdur_night starts at noon and continous to the noon on the following day.
 #' @export
 agg.sleepsight = function(aggregatefile, csvfile, surveyfile, 
                           desiredtz, minmisratio=1/3, shortwindow = 1, longwindow = 30,
-                          withings.mode = "dd") {
+                          withings.mode = "dd",startDate = c(), endDate=c()) {
   Sys.setlocale("LC_TIME", "C") # Set language to English
   D24HR = Dshort = Dlong = Dsurvey = c()
   if (!file.exists(csvfile)) {
@@ -66,11 +68,18 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       nax = which(is.na(tmp$x) == FALSE); tmp$x[nax] = tmp$x[nax] / dn 
       return(tmp)
     }
-    
     #----------------------------------------------------
     # Load data
     D = data.table::fread(csvfile)
     D = as.data.frame(D)
+    if (length(startDate) > 0 & length(endDate) > 0) {
+      startDateNum = as.numeric(as.Date(startDate)) * 3600*24
+      endDateNum = as.numeric(as.Date(endDate)) * 3600*24
+      timeNum = as.numeric(as.POSIXlt(D$time,"1970-01-01",tz=desiredtz))
+      validdates = which(timeNum > startDateNum & timeNum < endDateNum)
+      if (length(validdates) != 0) D = D[validdates,]
+    }
+    
     # Potentially Withings data is available from both Direct download and from PDK.
     # Use direct download if available, if not then use pdk, if neither is available then do not process 
     # any data from this person.
@@ -139,7 +148,13 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       D$status[inconclusive] = 4 
       #----------------------------------------------------
       # Create new dataframe with only status and timestamps
-      tmpmin = D[,c("time","status", "steps","lightLevel")]
+      ligth.available = as.logical(length(which(colnames(D) %in% "lightLevel" == TRUE)))
+      if (ligth.available == TRUE) {
+        tmpmin = D[,which(colnames(D) %in% c("time","status", "steps","lightLevel") == TRUE)]
+      } else {
+        tmpmin = D[,which(colnames(D) %in% c("time","status", "steps") == TRUE)]
+        cat("\nWarning: Light sensor data is not available for this individual!")
+      }
       # Untill here the data may include gaps in time, to minimize data storage needs.
       # We will now create continuous time series to ease plotting
       tmpmin$time_num = as.numeric(as.POSIXlt(tmpmin$time, tz=desiredtz, origin = "1970-1-1", format="%Y-%m-%d %H:%M:%OS"))
@@ -153,6 +168,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
       
       Dminute$time = as.POSIXlt(Dminute$time_num,origin="1970-1-1",tz=desiredtz)
       Dminute$date = as.Date(Dminute$time)
+    
       #========================================================
       # create new category sustained inactivity, if 95% or more of 90 minutes is inactive
       D6 = zoo::rollapply(Dminute$status,FUN=function(x) length(which(x == 0)),width = 90)
@@ -179,25 +195,37 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
           return(MM)
         }
         if (shortwindow == 1) {
-          Dshort = Dminute[,c("time", "status", "steps","lightLevel")]
+          if (ligth.available == TRUE) {
+            Dshort = Dminute[,c("time", "status", "steps","lightLevel")]
+          } else {
+            Dshort = Dminute[,c("time", "status", "steps")]
+          }
         } else {
           Dshort = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_short),FUN = calcmode)
           Dshort2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_short),FUN = mysum)
-          Dshort3 = aggregate(x = Dminute[,c("lightLevel")],by = list(time = Dminute$time_num_short),FUN = mymean)
           colnames(Dshort) = c("time", "status")
           colnames(Dshort2) = c("time", "steps")
-          colnames(Dshort3) = c("time", "lightLevel")
+          if (ligth.available == TRUE) {
+            Dshort3 = aggregate(x = Dminute[,c("lightLevel")],by = list(time = Dminute$time_num_short),FUN = mymean)
+            colnames(Dshort3) = c("time", "lightLevel")
+          }
           Dshort = merge(Dshort, Dshort2,by="time")
-          Dshort = merge(Dshort, Dshort3,by="time")
+          if (ligth.available == TRUE) {
+            Dshort = merge(Dshort, Dshort3,by="time")
+          }
         }
         Dlong = aggregate(x = Dminute[,c("status")],by = list(time = Dminute$time_num_long),FUN = calcmode)
         Dlong2 = aggregate(x = Dminute[,c("steps")],by = list(time = Dminute$time_num_long),FUN = mysum)
-        Dlong3 = aggregate(x = Dminute[,c("lightLevel")],by = list(time = Dminute$time_num_long),FUN = mymean)
         colnames(Dlong) = c("time", "status")
         colnames(Dlong2) = c("time", "steps")
-        colnames(Dlong3) = c("time", "lightLevel")
+        if (ligth.available == TRUE) {
+          Dlong3 = aggregate(x = Dminute[,c("lightLevel")],by = list(time = Dminute$time_num_long),FUN = mymean)
+          colnames(Dlong3) = c("time", "lightLevel")
+        }
         Dlong = merge(Dlong, Dlong2,by="time")
-        Dlong = merge(Dlong, Dlong3,by="time")
+        if (ligth.available == TRUE) {
+          Dlong = merge(Dlong, Dlong3,by="time")
+        }
         Dshort = AddTimeToDF(Dshort, desiredtz) 
         DshortB = Dshort # used only for calculating D24HR
         Dshort = status2factor(Dshort) # used as output
@@ -233,14 +261,14 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         missing_dur_perday = aggregate(x = DshortB$status,by = list(date = DshortB$date),FUN = function(x) length(which(x==5)))
         missing_dur_perday = mydivfun(missing_dur_perday,dn=NSinH)
         colnames(missing_dur_perday) = c("date","missing_dur")
-        
-        lightExposureDur_perday = aggregate(x = DshortB$lightLevel,by = list(date = DshortB$date),FUN = function(x) length(which(x>0)))
-        lightExposureDur_perday = mydivfun(lightExposureDur_perday,dn=NSinH)
-        colnames(lightExposureDur_perday) = c("date","lightExposureDur_perday")
-        
-        lightExposureMean_perday = aggregate(x = DshortB$lightLevel,by = list(date = DshortB$date),mymean)
-        colnames(lightExposureMean_perday) = c("date","lightExposureMean_perday")
-        
+        if (ligth.available == TRUE) {
+          lightExposureDur_perday = aggregate(x = DshortB$lightLevel,by = list(date = DshortB$date),FUN = function(x) length(which(x>0)))
+          lightExposureDur_perday = mydivfun(lightExposureDur_perday,dn=NSinH)
+          colnames(lightExposureDur_perday) = c("date","lightExposureDur_perday")
+          
+          lightExposureMean_perday = aggregate(x = DshortB$lightLevel,by = list(date = DshortB$date),mymean)
+          colnames(lightExposureMean_perday) = c("date","lightExposureMean_perday")
+        }
         steps_perday = aggregate(x = DshortB$steps,by = list(date = DshortB$date),FUN = mysum)
         # Note: not dividing by number of short windows in a hours, because we want this to be the sum
         colnames(steps_perday) = c("date","total_steps")
@@ -250,8 +278,10 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         D24HR = merge(D24HR,inconclusive_dur_perday,by="date")
         D24HR = merge(D24HR,missing_dur_perday,by="date")
         D24HR = merge(D24HR,steps_perday,by="date")
-        D24HR = merge(D24HR,lightExposureDur_perday,by="date")
-        D24HR = merge(D24HR,lightExposureMean_perday,by="date")
+        if (ligth.available == TRUE) {
+          D24HR = merge(D24HR,lightExposureDur_perday,by="date")
+          D24HR = merge(D24HR,lightExposureMean_perday,by="date")
+        }
         D24HR = merge(D24HR,sleepdur_pernight,by="date")
         
         #--------------------------------------------------------
