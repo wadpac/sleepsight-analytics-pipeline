@@ -4,7 +4,7 @@ rm(list=ls())
 # Input arguments for this script:
 development.mode = FALSE # Set to FALSE if you are using this script
 
-overwrite.preprocess = TRUE # whether to overwrite previously generated preprocessing output with this R code.
+overwrite.preprocess = FALSE # whether to overwrite previously generated preprocessing output with this R code.
 overwrite.preprocess2csv = TRUE
 overwrite.aggregate = TRUE
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
@@ -104,9 +104,11 @@ if (length(foldersInStudyFolder) == 0) stop(paste0("\nNo folders found inside ",
 dateRange = as.data.frame(matrix(dateRange,ncol = 3,byrow = TRUE))
 colnames(dateRange) = c("id","startDate","endDate")
 
-# foldersInStudyFolder = c("/media/vincent/sleepsight/SS05")
-# ,    "/media/vincent/sleepsight/SS25") #c("/media/vincent/sleepsight/SS08","/media/vincent/sleepsight/SS14")
-foldersInStudyFolder = c("/media/vincent/sleepsight/SS01")
+if (development.mode == TRUE) {
+  # foldersInStudyFolder = c("/media/vincent/sleepsight/SS05")
+  # ,    "/media/vincent/sleepsight/SS25") #c("/media/vincent/sleepsight/SS08","/media/vincent/sleepsight/SS14")
+  # foldersInStudyFolder = c("/media/vincent/sleepsight/SS01")
+}
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
   cat("\n==================================================================================")
@@ -179,7 +181,7 @@ for (personfolder in foldersInStudyFolder) {
     heatmaps(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, 
              simplify.behavioralclasses, Dsurvey, startDate, endDate, desiredtz)
     # time series
-    plot_timeseries(D24HR, Dsurvey, timeseriesfile)
+    plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz)
   }
   #------------------------------------------------------------------
   deltatime = difftime(Sys.time(), timer0, units = "secs")

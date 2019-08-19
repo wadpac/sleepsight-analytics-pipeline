@@ -70,6 +70,11 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
     }
     #----------------------------------------------------
     # Load data
+    # check that file exists:
+    if (file.exists(csvfile) == FALSE) {
+      stop("\nCsv-file ",csvfile," (as specified by used) is not available, first use export2csv to export the preprocessed data to csv format.")
+    }
+    
     D = data.table::fread(csvfile)
     D = as.data.frame(D)
     if (length(startDate) > 0 & length(endDate) > 0) {
@@ -88,6 +93,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
     # cat(paste0("\nCDF: ",CDF[which(CDF %in% c("steps_dd", "withingsMove_dd","steps_pdk", "withingsMove_pdk") == TRUE)]),collapse = "")
     if ("withingsMove_dd" %in% CDF == FALSE & "withingsMove_pdk" %in% CDF == FALSE) {
       do.withings = FALSE
+      cat("\nNo Withings data was found from either direct download or pdk, this package only runs when Withings data is avaialble.")
     } else {
       
       if ("withingsMove_dd" %in% CDF & withings.mode != "pdk" | 

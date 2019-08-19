@@ -3,9 +3,10 @@
 #' @param D24HR data.frame with corresponding name produced by agg.sleepsight.
 #' @param Dsurvey data.frame with corresponding name produced by agg.sleepsight.
 #' @param timeseriesfile png.file to which the plot should be written to
+#' @param desiredtz timezone (character) in Europe/London format
 #' @return no output, just a file is stored
 #' @export
-plot_timeseries = function(D24HR, Dsurvey, timeseriesfile) {
+plot_timeseries = function(D24HR, Dsurvey, timeseriesfile, desiredtz) {
   if (length(startDate) > 0 & length(endDate) > 0) {
     startDateNum = as.numeric(as.Date(startDate)) * 3600*24
     endDateNum = as.numeric(as.Date(endDate)) * 3600*24
