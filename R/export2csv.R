@@ -114,6 +114,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
       } else {
         movei = which(withings_act$movement == TRUE)
       }
+      withings_act$steps = as.numeric(as.character(withings_act$steps)) # steps are stored as factor
       WithingsMovement = withings_act[movei,which(colnames(withings_act) %in% c("timestamp","steps") == TRUE)]
       WithingsMovement = aggregate_withingsact(WithingsMovement)
       WithingsMovement$withingsMove_pdk = TRUE
