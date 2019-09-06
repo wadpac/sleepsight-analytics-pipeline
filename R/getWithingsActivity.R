@@ -84,7 +84,7 @@ getWithingsActivity = function(filefolder, desiredtz, directdownload = TRUE) {
       StepsPerMinute = unlist(lapply(devint$value,SplitValues,cumsum=FALSE))
       Duration = unlist(lapply(devint$duration,SplitValues,cumsum=FALSE))
       CumDuration = unlist(lapply(devint$duration,SplitValues,cumsum=TRUE))
-      # devint2 = mefa::rep.data.frame(devint, times = devint$N) # create new data.frame with extra rows
+      
       devint2 = as.data.frame(lapply(devint, rep, times = devint$N)) # create new data.frame with extra rows
       devint2$steps = StepsPerMinute
       devint2$duration = Duration
@@ -92,7 +92,7 @@ getWithingsActivity = function(filefolder, desiredtz, directdownload = TRUE) {
       devint2$Created.Date.POSIX = devint2$Created.Date.POSIX + devint2$cumdur
       rm(devint)
       devint = devint2[,-which(colnames(devint2) %in% c("start","duration","cumdur","N","value") ==  TRUE)]
-      devint$Date = as.Date(devint$Created.Date.POSIX)
+      devint$Date = as.Date(as.POSIXlt(devint$Created.Date.POSIX, tz = desiredtz))
       withings_personactive = data.frame(timestamp = as.character(devint$Created.Date.POSIX),
                                          movement=rep(TRUE,nrow(devint)),
                                          date= devint$Date, # to facilitate calculating steps per day (see commented code above)
@@ -106,7 +106,7 @@ getWithingsActivity = function(filefolder, desiredtz, directdownload = TRUE) {
       devint = addPOSIX(devint, desiredtz)
       devint = devint[,c("Source","Created.Date.POSIX","steps","swim_strokes","pool_laps","elevation_climbed","distance","calories")]
       devint =devint[is.na(devint$steps)==FALSE,]
-      devint$Date = as.Date(devint$Created.Date.POSIX)
+      devint$Date = as.Date(as.POSIXlt(devint$Created.Date.POSIX, tz = desiredtz))
       # timestamps when person was active
       withings_personactive = data.frame(timestamp = as.character(devint$Created.Date.POSIX),
                                          movement=rep(TRUE,nrow(devint)),
