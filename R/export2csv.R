@@ -15,7 +15,7 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
     cat("\n* Export to csv")
     # to avoid warning "no visible binding for global variable " by R CMD check
     # when it sees that we are using undeclared objects, which actually are loaded
-    PhoneAcc =withings_act = withings_actDD = AppHalted = c()
+    lightOnTimes = lightLevel = PhoneAcc =withings_act = withings_actDD = AppHalted = c()
     rm(PhoneAcc, withings_act, withings_actDD, AppHalted)
     
     RDAfiles = dir(outputfolder,full.names = TRUE)
@@ -52,16 +52,18 @@ export2csv = function(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv
     # and merge all channels in one data.frame df
     df = c()
     if ("lightOnTimes" %in% ls()) {
-      time_num = round(as.numeric(lightOnTimes)/60) * 60 # needed for aggregating the lightLevel further down
-      # aggregate to minute level
-      lightdf = data.frame(time_num = time_num, lightLevel = lightLevel)
-      lightdf_min = aggregate(lightdf, by = list(lightdf$time_num),FUN = mean)
-      # tidy up data.frame to enable merging to df
-      lightdf_min$time = as.character(as.POSIXlt(lightdf_min$time_num, origin="1970-1-1", tz= desiredtz))
-      lightdf_min = lightdf_min[,c("time","lightLevel")]
-      lightdf_min$lightLevel = as.integer(round(lightdf_min$lightLevel))
-      lightdf_min$lighton = TRUE
-      df = addToDF(df,lightdf_min, desiredtz)
+      if (length(lightOnTimes) > 0 & length(lightLevel) > 0) {
+        time_num = round(as.numeric(lightOnTimes)/60) * 60 # needed for aggregating the lightLevel further down
+        # aggregate to minute level
+        lightdf = data.frame(time_num = time_num, lightLevel = lightLevel)
+        lightdf_min = aggregate(lightdf, by = list(lightdf$time_num),FUN = mean)
+        # tidy up data.frame to enable merging to df
+        lightdf_min$time = as.character(as.POSIXlt(lightdf_min$time_num, origin="1970-1-1", tz= desiredtz))
+        lightdf_min = lightdf_min[,c("time","lightLevel")]
+        lightdf_min$lightLevel = as.integer(round(lightdf_min$lightLevel))
+        lightdf_min$lighton = TRUE
+        df = addToDF(df,lightdf_min, desiredtz)
+      }
     }
     if ("ScreenOnTimes" %in% ls()) {
       ScreenOnTimes = aggregatePerMinute(ScreenOnTimes, desiredtz) # from 1 to 60 seconds

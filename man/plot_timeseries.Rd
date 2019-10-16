@@ -4,7 +4,8 @@
 \alias{plot_timeseries}
 \title{plot_timeseries}
 \usage{
-plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz)
+plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz,
+  startDate = c(), endDate = c())
 }
 \arguments{
 \item{D24HR}{data.frame with corresponding name produced by agg.sleepsight.}
@@ -14,6 +15,10 @@ plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz)
 \item{timeseriesfile}{png.file to which the plot should be written to}
 
 \item{desiredtz}{timezone (character) in Europe/London format}
+
+\item{startDate}{Character,  optional argument to specify the startDate of the recording, e.g. 2019-01-01}
+
+\item{endDate}{Character, optional argument to specify the startDate of the recording, e.g. 2019-01-01}
 }
 \value{
 no output, just a file is stored

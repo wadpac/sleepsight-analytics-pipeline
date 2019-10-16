@@ -240,6 +240,19 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         #========================================================
         # Aggregate per day
         NSinH = 60 / shortwindow #number of shortwindows (length in minuntes) in an hours
+        
+        sleepmedian = function(x) {
+          slp = which(x==-1)
+          if (length(slp) > 1) {
+            md = slp[round(length(slp)/2)]
+          } else {
+            md = NA
+          }
+          return(md)
+        }
+        sleepmedian_pernight = aggregate(x = DshortB$status,by = list(date = DshortB$date_12HrShiftBack),FUN = sleepmedian)
+        colnames(sleepmedian_pernight) = c("date","sleep_median") # medium of all timestamps in a day on which sleep occurs
+
         sleepdur_pernight = aggregate(x = DshortB$status,by = list(date = DshortB$date_12HrShiftBack),FUN = function(x) length(which(x==-1)))
         sleepdur_pernight = mydivfun(sleepdur_pernight,dn=NSinH) # convert x-5-minute window of a day into hour
         colnames(sleepdur_pernight) = c("date","sleepdur_night") # duration expressed in minutes
@@ -279,6 +292,7 @@ agg.sleepsight = function(aggregatefile, csvfile, surveyfile,
         # Note: not dividing by number of short windows in a hours, because we want this to be the sum
         colnames(steps_perday) = c("date","total_steps")
         D24HR = merge(sleepdur_perday,activedur_perday,by="date")
+        D24HR = merge(D24HR,sleepmedian_pernight,by="date")
         D24HR = merge(D24HR,inactivedur_perday,by="date")
         D24HR = merge(D24HR,susindur_perday,by="date")
         D24HR = merge(D24HR,inconclusive_dur_perday,by="date")
