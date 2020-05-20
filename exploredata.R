@@ -5,15 +5,15 @@ rm(list=ls())
 development.mode = FALSE # Set to FALSE if you are using this script
 
 overwrite.preprocess = TRUE # whether to overwrite previously generated preprocessing output with this R code.
-overwrite.preprocess2csv = TRUE
-overwrite.aggregate = TRUE
+overwrite.preprocess2csv = TRUE # whether to overwrite previously generated csv exports of the preprocessed data.
+overwrite.aggregate = TRUE # whether to overwrite previously generated aggregates
 do.plot = TRUE # whether to create a simple histogram of available data and write it to file "histograms_test" inside each data folder.
 
-simplify.behavioralclasses = FALSE # set to FALSE otherwise inactivity and sleep arge merged into one class, which we explore earlier
+simplify.behavioralclasses = FALSE # set to FALSE otherwise inactivity and sleep arge merged into one class, which we explored earlier
 
 withings.mode = "dd" # Either "pdk" or "dd" to indicate which data source for Withings data to prioritise pdk or dd
 lightThreshold = 10 # Light value above which light is stored, and below which we assume darkness
-ignore.light = FALSE #Note: If light is not available the code will ignore it either way.
+ignore.light = FALSE #Note: If light is not available, this is ignored.
 desiredtz = "Europe/Amsterdam"
 
 # Note: see README for expected folder structure!
@@ -67,7 +67,7 @@ if (development.mode == FALSE) {
   library(Sleepsight)
 } else {
   roxygen2::roxygenise()
-  locationRcode = "/home/vincent/sleepsight-analytics-pipeline/R" 
+  locationRcode = "/home/vincent/projects/sleepsight-analytics-pipeline/R" 
   ffnames = dir(locationRcode) # creating list of filenames of scriptfiles to load
   for (i in 1:length(ffnames)) {
     source(paste(locationRcode,"/",ffnames[i],sep="")) #loading scripts for reading geneactiv data
@@ -107,7 +107,7 @@ colnames(dateRange) = c("id","startDate","endDate")
 if (development.mode == TRUE) {
   foldersInStudyFolder = c("/media/vincent/projects/sleepsight/SS08")
   # ,    "/media/vincent/sleepsight/SS25") #c("/media/vincent/sleepsight/SS08","/media/vincent/sleepsight/SS14")
-  # foldersInStudyFolder = c("/media/vincent/sleepsight/SS01")
+  foldersInStudyFolder = c("/media/vincent/projects/sleepsight/SS34")
 }
 for (personfolder in foldersInStudyFolder) {
   timer0 = Sys.time()
@@ -133,13 +133,11 @@ for (personfolder in foldersInStudyFolder) {
   }
   export2csv(preproDataPerID, csvfile, desiredtz, overwrite.preprocess2csv,
              startDate = startDate, endDate = endDate)
-  
   # plot histograms as quick check on the data
   if (do.plot == TRUE) { # simple historgram of all available data channels within a person
     histfile = paste0(histfolder,"/histogram_",personID,".png")
     testplot(histfile, csvfile)
   }
-  
   # aggregate the data per minute, 30 minutes and day
   aggregatefile = paste0(aggfolder,"/agg.sleepsight_",withings.mode,"_",personID,".RData")
   surveyfile = paste0(preproDataPerID,"/SleepSurvey.RData")
@@ -181,7 +179,7 @@ for (personfolder in foldersInStudyFolder) {
     heatmaps(Dshort, Dlong, heatmapsfile, heatmapsfile_steps, 
              simplify.behavioralclasses, Dsurvey, startDate, endDate, desiredtz)
     # time series
-    plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz)
+    plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz, startDate = startDate, endDate = endDate)
   }
   #------------------------------------------------------------------
   deltatime = difftime(Sys.time(), timer0, units = "secs")
