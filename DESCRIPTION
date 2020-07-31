@@ -1,8 +1,8 @@
 Package: Sleepsight
 Type: Package
 Title: Wearable Sensor and Survey Processing Pipeline
-Version: 0.2-1
-Date: 2019-10-16
+Version: 0.2-2
+Date: 2020-07-31
 Authors@R: c(person("Vincent T","van Hees",role=c("aut","cre"),
                   email="vincentvanhees@gmail.com"))
 Maintainer: Vincent T van Hees <vincentvanhees@gmail.com>
@@ -14,4 +14,4 @@ Imports: data.table, ggplot2, cowplot
 Depends: stats, utils, R (>= 3.1.2), grDevices, graphics
 NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0

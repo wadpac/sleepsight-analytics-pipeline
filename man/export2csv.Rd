@@ -4,8 +4,14 @@
 \alias{export2csv}
 \title{export2csv}
 \usage{
-export2csv(outputfolder, csvfile, desiredtz, overwrite.preprocess2csv,
-  startDate = c(), endDate = c())
+export2csv(
+  outputfolder,
+  csvfile,
+  desiredtz,
+  overwrite.preprocess2csv,
+  startDate = c(),
+  endDate = c()
+)
 }
 \arguments{
 \item{outputfolder}{RData datafile where the output of preprocess is stored.}

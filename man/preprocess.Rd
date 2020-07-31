@@ -4,8 +4,14 @@
 \alias{preprocess}
 \title{preprocess}
 \usage{
-preprocess(personfolder, desiredtz, overwrite = FALSE, outputfolder,
-  ignore.light = TRUE, lightThreshold = 10)
+preprocess(
+  personfolder,
+  desiredtz,
+  overwrite = FALSE,
+  outputfolder,
+  ignore.light = TRUE,
+  lightThreshold = 10
+)
 }
 \arguments{
 \item{personfolder}{folder in which we expect all the pdk and Withings output folder.}

@@ -4,9 +4,18 @@
 \alias{agg.sleepsight}
 \title{agg.sleepsight}
 \usage{
-agg.sleepsight(aggregatefile, csvfile, surveyfile, desiredtz,
-  minmisratio = 1/3, shortwindow = 1, longwindow = 30,
-  withings.mode = "dd", startDate = c(), endDate = c())
+agg.sleepsight(
+  aggregatefile,
+  csvfile,
+  surveyfile,
+  desiredtz,
+  minmisratio = 1/3,
+  shortwindow = 1,
+  longwindow = 30,
+  withings.mode = "dd",
+  startDate = c(),
+  endDate = c()
+)
 }
 \arguments{
 \item{aggregatefile}{RData file where the output of aggregation will be stored.}

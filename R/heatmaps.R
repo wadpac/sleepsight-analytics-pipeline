@@ -56,10 +56,9 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
     Dshort$status[which(Dshort$status %in% c("sustained inactive","sleep") == TRUE)] = "inactive"
   }
   dates_on_x_axis = unique(Dshort$date)
-  
   dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),round(length(dates_on_x_axis) / 25))]
   Dshort$date = as.Date(Dshort$date)
-  
+
   # Add clock times to Dsurvey for risetime
   Dsurvey = Dsurvey[!duplicated(Dsurvey),]
   Dsurvey$date = as.character(as.Date(Dsurvey$risetime))
@@ -85,8 +84,9 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
   
   Dshort = addDoublePlot(Dshort)
   
-  
-  
+  textsize.y = 20
+  legend.size = 14
+  y.breaks = c(0,12,24,36,48)
   # We want to plot a heatmap with on top of that the bedtimes and rising times according to the survey
   # and a separate legend for each.
   # This plot was difficult to create in ggplot directly, but with the help of 
@@ -95,32 +95,43 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
   # First focus on getting the plot itself, getting both legends is not important now:
   p0 = ggplot() +
     geom_tile(data=Dshort,
-              aes(date, Dshort$hour_in_day, fill=Dshort$status)) + # Add tiles (heatmap)
+              aes(date, hour_in_day, fill=status)) + # Add tiles (heatmap)
     geom_point(data=Dsurvey,
-               aes(x=Dsurvey$date, y=Dsurvey$hour_in_day_rise),
+               aes(x=date, y=hour_in_day_rise),
                color = as.character(coldic2["rise"])) +  # Add the line plot with risetime
     geom_point(data=Dsurvey,
-               aes(x=Dsurvey$date, y=Dsurvey$hour_in_day_bed),
+               aes(x=date, y=hour_in_day_bed),
                color = as.character(coldic2["bed"])) +  # Add the line plot with bedtime
     xlab("") +
-    ylab("Hour in day") +
+    # ylab("Hour in day") +
     theme_bw() +
     scale_colour_manual(name="Passive data", values = coldic) +
     scale_fill_manual(name="Passive data", values = coldic) +
     scale_x_discrete(breaks = dates_on_x_axis) +
-    theme(axis.text.x = element_text(angle = 45))
+    scale_y_continuous(name="Hour in day", breaks=y.breaks) +
+    theme(axis.text.x = element_text(angle = 45),
+          axis.text.y = element_text(size = textsize.y),
+          axis.title.y = element_text(size = textsize.y),
+          legend.text = element_text(size = legend.size),
+          legend.title = element_text(size = legend.size)) #
+    
   
   # Now create new plot for the points only and focus on getting a good legend for it:
   p2 = ggplot() +
     geom_point(data=DS,
-               aes(x=DS$date, y=DS$hr, color=DS$action),
+               aes(x=date, y= hr, color=action),
                shape = DS$shape) +  # Add the line plot with risetime
-      xlab("") +
-    ylab("Hour in day") +
+      xlab("") + ylab("") +
+    # ylab("Hour in day") +
     theme_bw() +
     scale_colour_manual(name="Sleep Diary", values = coldic2) +
     scale_x_discrete(breaks = dates_on_x_axis) +
-    theme(axis.text.x = element_text(angle = 45))
+    scale_y_continuous(name="Hour in day", breaks=y.breaks) +
+    theme(axis.text.x = element_text(angle = 45),
+          axis.text.y = element_text(size = textsize.y),
+          axis.title.y = element_text(size = textsize.y),
+          legend.text = element_text(size = legend.size),
+          legend.title = element_text(size = legend.size)) #
 
   # Extract main legends that we need
   leg0 <- get_legend(p0)
@@ -135,7 +146,8 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
                        nrow = 1,
                        align = "l",
                        axis = "t",
-                       rel_widths = c(1, 0.1))
+                       rel_widths = c(1, 0.2))
+        # theme(legend.text = element_text(size = legend.size))
   # write to png file
   png(filename = heatmapsfile ,width = 15, height = 7,units = "in",res = 400)                       
   print(final_p)
@@ -144,12 +156,14 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
   # Heatmap of steps
   dates_on_x_axis = unique(Dlong$date)
   dates_on_x_axis = dates_on_x_axis[seq(1,length(dates_on_x_axis),round(length(dates_on_x_axis) / 25))]
+
+  
   Dlong$date = as.Date(Dlong$date)
   Dlong = addDoublePlot(Dlong)
   Dlong$steps = as.numeric(Dlong$steps)
   png(filename = heatmapsfile_steps ,width = 15, height = 7,units = "in",res = 400)
-  myplot = ggplot(Dlong, aes(date, Dlong$hour_in_day)) +
-    geom_raster(aes(fill=Dlong$steps)) +
+  myplot = ggplot(Dlong, aes(date, hour_in_day)) +
+    geom_raster(aes(fill=steps)) +
     xlab("") +
     ylab("Hour in day") +
     theme_bw() +

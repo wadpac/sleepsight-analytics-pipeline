@@ -4,8 +4,14 @@
 \alias{plot_timeseries}
 \title{plot_timeseries}
 \usage{
-plot_timeseries(D24HR, Dsurvey, timeseriesfile, desiredtz,
-  startDate = c(), endDate = c())
+plot_timeseries(
+  D24HR,
+  Dsurvey,
+  timeseriesfile,
+  desiredtz,
+  startDate = c(),
+  endDate = c()
+)
 }
 \arguments{
 \item{D24HR}{data.frame with corresponding name produced by agg.sleepsight.}
