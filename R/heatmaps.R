@@ -84,7 +84,7 @@ heatmaps = function(Dshort, Dlong, heatmapsfile, heatmapsfile_steps,
   
   Dshort = addDoublePlot(Dshort)
   
-  textsize.y = 20
+  textsize.y = 16
   legend.size = 14
   y.breaks = c(0,12,24,36,48)
   # We want to plot a heatmap with on top of that the bedtimes and rising times according to the survey
